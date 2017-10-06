@@ -2,4 +2,6 @@
     <string name="app_name">MSheet</string>
     <string name="error_generic">Just Whut Happened?!</string>
     <string name="title_library">Library</string>
+    <string name="error_image_chooser">There\'s a problem with the image.</string>
+    <string name="error_no_image">No selected image.</string>
 </resources>

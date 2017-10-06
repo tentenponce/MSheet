@@ -10,12 +10,7 @@ import com.tcorner.msheet.data.DataManager;
  */
 public class BasePresenter<T extends MvpView> implements Presenter<T> {
 
-    protected DataManager mDataManager;
     private T mMvpView;
-
-    public BasePresenter(DataManager dataManager) {
-        this.mDataManager = dataManager;
-    }
 
     @Override
     public void attachView(T mvpView) {

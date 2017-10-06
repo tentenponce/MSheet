@@ -1,7 +1,14 @@
 package com.tcorner.msheet.data;
 
+import com.tcorner.msheet.data.local.DatabaseHelper;
+import com.tcorner.msheet.data.model.Sheet;
+
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.inject.Singleton;
+
+import io.reactivex.Observable;
 
 /**
  * data manager
@@ -11,7 +18,18 @@ import javax.inject.Singleton;
 @Singleton
 public class DataManager {
 
+    private final DatabaseHelper databaseHelper;
+
     @Inject
-    public DataManager() {
+    public DataManager(DatabaseHelper databaseHelper) {
+        this.databaseHelper = databaseHelper;
+    }
+
+    public Observable<Sheet> addSheet(Sheet sheet) {
+        return databaseHelper.addSheet(sheet);
+    }
+
+    public Observable<List<Sheet>> getSheets() {
+        return databaseHelper.getSheets();
     }
 }

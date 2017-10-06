@@ -1,6 +1,9 @@
 package com.tcorner.msheet.ui.library;
 
+import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.ui.base.MvpView;
+
+import java.util.List;
 
 /**
  * library mvp view
@@ -9,5 +12,7 @@ import com.tcorner.msheet.ui.base.MvpView;
 
 public interface LibraryMvpView extends MvpView {
 
-    void showMusicSheets();
+    void showAddSheet(Sheet sheet);
+
+    void showMusicSheets(List<Sheet> sheets);
 }

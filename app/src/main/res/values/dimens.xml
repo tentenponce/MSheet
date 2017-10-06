@@ -1,0 +1,23 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="horizontal_margin">16dp</dimen>
+    <dimen name="vertical_margin">16dp</dimen>
+
+    <dimen name="vertical_list_padding">10dp</dimen>
+    <dimen name="horizontal_list_padding">16dp</dimen>
+
+    <dimen name="small_list_height">72dp</dimen>
+    <dimen name="large_list_height">88dp</dimen>
+
+    <dimen name="text_headline">24sp</dimen>
+    <dimen name="text_large_title">22sp</dimen>
+    <dimen name="text_title">20sp</dimen>
+    <dimen name="text_large_body">18sp</dimen>
+    <dimen name="text_body">16sp</dimen>
+    <dimen name="text_small_body">14sp</dimen>
+    <dimen name="text_small">12sp</dimen>
+
+    <dimen name="edittext_drawable_padding_left">10dp</dimen>
+    <dimen name="title_margin_top">18dp</dimen>
+    <dimen name="fab_margin">16dp</dimen>
+</resources>

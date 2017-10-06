@@ -1,51 +1,36 @@
 package com.tcorner.msheet.data.model;
 
-import android.graphics.Bitmap;
+import com.google.auto.value.AutoValue;
 
+import java.util.Calendar;
 import java.util.Date;
-import java.util.List;
+import java.util.UUID;
 
 /**
  * piano sheet/piece model
  * Created by Exequiel Egbert V. Ponce on 9/12/2017.
  */
 
-public class Sheet {
+@AutoValue
+public abstract class Sheet {
 
-    private String uuid;
-    private Bitmap bitmap;
-    private String groupUuid;
-    private Date dateModified;
+    public abstract String uuid();
 
-    public String getUuid() {
-        return uuid;
+    public abstract byte[] image();
+
+    public abstract String groupUuid();
+
+    public abstract Date dateModified();
+
+    public static Sheet create(String uuid, byte[] image, String groupUuid, Date dateModified) {
+        return new AutoValue_Sheet(uuid, image, groupUuid, dateModified);
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public static Sheet create(byte[] image, String groupUuid) {
+        return create(UUID.randomUUID().toString(), image, groupUuid, Calendar.getInstance().getTime());
     }
 
-    public Bitmap getBitmap() {
-        return bitmap;
-    }
-
-    public void setBitmap(Bitmap bitmap) {
-        this.bitmap = bitmap;
-    }
-
-    public String getGroupUuid() {
-        return groupUuid;
-    }
-
-    public void setGroupUuid(String groupUuid) {
-        this.groupUuid = groupUuid;
-    }
-
-    public Date getDateModified() {
-        return dateModified;
-    }
-
-    public void setDateModified(Date dateModified) {
-        this.dateModified = dateModified;
+    public static Sheet create(Sheet sheet) {
+        return create(sheet.uuid(), sheet.image(), sheet.groupUuid(), sheet.dateModified());
     }
 }
