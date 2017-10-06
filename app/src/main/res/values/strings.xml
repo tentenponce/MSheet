@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">MSheet</string>
     <string name="error_generic">Just Whut Happened?!</string>
+    <string name="title_library">Library</string>
 </resources>
