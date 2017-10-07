@@ -2,7 +2,10 @@ package com.tcorner.msheet.ui.library;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,6 +14,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -20,14 +24,28 @@ import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.ui.base.BaseActivity;
 import com.tcorner.msheet.util.FileUtil;
 import com.tcorner.msheet.util.ImageUtil;
+import com.tcorner.msheet.util.RxUtil;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * displays all of your music sheeeeeets
@@ -36,7 +54,7 @@ import butterknife.ButterKnife;
 
 public class LibraryActivity extends BaseActivity implements LibraryMvpView, View.OnClickListener {
 
-    private static final int REQUEST_CAMERA = 1;
+    private static final int REQUEST_GALLERY = 1;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -50,6 +68,8 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     @Inject
     LibraryPresenter libraryPresenter;
 
+    private Disposable disposable;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -60,6 +80,7 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
         libraryPresenter.attachView(this);
 
         initViews();
+        libraryPresenter.getSheets();
     }
 
     @Override
@@ -67,46 +88,73 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
         super.onDestroy();
 
         libraryPresenter.detachView();
+        RxUtil.unsubscribe(disposable);
     }
 
     @Override
     public void showError() {
-        /**/
+        Toast.makeText(this, "Awww! Problem alert! Call Tenten", Toast.LENGTH_SHORT).show();
     }
 
     @Override
-    public void showAddSheet(Sheet sheet) {
+    public void showAddSheet() {
         Toast.makeText(this, "Success adding sheets.", Toast.LENGTH_SHORT).show();
         libraryPresenter.getSheets();
     }
 
     @Override
-    public void showMusicSheets(List<Sheet> sheets) {
-        linSheets.removeAllViews();
-        for (Sheet sheet : sheets) {
-            ImageView imageView = new ImageView(this);
-
-            ImageUtil.loadToGlide(getApplicationContext(), imageView, sheet.image());
-            linSheets.addView(imageView);
-        }
+    public void showDeleteSheet() {
+        Toast.makeText(this, "Sheet successfully deleted.", Toast.LENGTH_SHORT).show();
+        libraryPresenter.getSheets();
     }
 
-    private void initViews() {
-        /* init toolbar */
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(R.string.title_library);
-        }
+    @Override
+    public void showMusicSheets(final List<Sheet> sheets) {
+        linSheets.removeAllViews();
 
-        /* init click listeners */
-        fabAddSheet.setOnClickListener(this);
+        RxUtil.unsubscribe(disposable);
+        Observable.fromIterable(sheets)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Sheet>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onNext(@NonNull final Sheet sheet) {
+                        ImageView imageView = new ImageView(LibraryActivity.this.getApplicationContext());
+
+                        ImageUtil.loadToGlide(getApplicationContext(), imageView, sheet.imagePath());
+
+                        imageView.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                libraryPresenter.deleteSheet(sheet.uuid());
+                            }
+                        });
+
+                        linSheets.addView(imageView);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        /**/
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        /**/
+                    }
+                });
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (resultCode == Activity.RESULT_OK) {
-            if (requestCode == 1) {
+            if (requestCode == REQUEST_GALLERY) {
                 if (data == null) {
                     Toast.makeText(this, R.string.error_no_image, Toast.LENGTH_SHORT).show();
                     return;
@@ -124,13 +172,49 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
         }
     }
 
-    private void onChooseFile(Uri selectedFileUri) {
-        try {
-            libraryPresenter.addSheet(Sheet.create(ImageUtil.getBitmapAsByteArray(MediaStore.Images.Media.getBitmap(
-                    getApplicationContext().getContentResolver(), selectedFileUri)), "123"));
-        } catch (IOException e) {
-            Toast.makeText(this, "There's a problem adding sheet.", Toast.LENGTH_SHORT).show();
+    @Override
+    public void onClick(View view) {
+        if (view.getId() == R.id.fab_add_sheet) {
+            showFileChooser();
         }
+    }
+
+    private void initViews() {
+        /* init toolbar */
+        setSupportActionBar(toolbar);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setTitle(R.string.title_library);
+        }
+
+        /* init click listeners */
+        fabAddSheet.setOnClickListener(this);
+    }
+
+    private void onChooseFile(Uri selectedFileUri) {
+        saveToInternalStorage(selectedFileUri)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onNext(@NonNull String s) {
+                        libraryPresenter.addSheet(Sheet.create(s, "123"));
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        Toast.makeText(LibraryActivity.this, "Image failed to save.", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        /**/
+                    }
+                });
     }
 
     protected void showFileChooser() {
@@ -145,13 +229,43 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
         intent.setType("image/*");
 
         //starts new activity to select file and return data
-        startActivityForResult(intent, REQUEST_CAMERA);
+        startActivityForResult(intent, REQUEST_GALLERY);
     }
 
-    @Override
-    public void onClick(View view) {
-        if (view.getId() == R.id.fab_add_sheet) {
-            showFileChooser();
-        }
+    private Observable<String> saveToInternalStorage(final Uri uri) {
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        File directory = cw.getDir("msheet", Context.MODE_PRIVATE); //image directory
+
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        String ext = mime.getExtensionFromMimeType(getApplicationContext().getContentResolver().getType(uri));
+
+        final File mypath = new File(directory, UUID.randomUUID().toString() + "." + ext); //build the name to be save
+
+        RxUtil.unsubscribe(disposable);
+        return Observable.zip(Observable.create(new ObservableOnSubscribe<FileOutputStream>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<FileOutputStream> e) throws FileNotFoundException {
+                if (!e.isDisposed()) {
+                    e.onNext(new FileOutputStream(mypath));
+                    e.onComplete();
+                }
+            }
+        }), Observable.create(new ObservableOnSubscribe<Bitmap>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Bitmap> e) throws IOException {
+                if (!e.isDisposed()) {
+                    e.onNext(MediaStore.Images.Media.getBitmap(getContentResolver(), uri));
+                    e.onComplete();
+                }
+            }
+        }), new BiFunction<FileOutputStream, Bitmap, String>() {
+            @Override
+            public String apply(@NonNull FileOutputStream fileOutputStream, @NonNull Bitmap bitmap) throws Exception {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                return mypath.getAbsolutePath();
+            }
+        });
+
     }
+
 }

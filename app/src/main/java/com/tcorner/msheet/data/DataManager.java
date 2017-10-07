@@ -29,6 +29,10 @@ public class DataManager {
         return databaseHelper.addSheet(sheet);
     }
 
+    public Observable<Sheet> deleteSheet(String uuid) {
+        return databaseHelper.deleteSheet(uuid);
+    }
+
     public Observable<List<Sheet>> getSheets() {
         return databaseHelper.getSheets();
     }

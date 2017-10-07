@@ -14,23 +14,23 @@ import java.util.UUID;
 @AutoValue
 public abstract class Sheet {
 
+    public static Sheet create(String uuid, String imagePath, String groupUuid, Date dateModified) {
+        return new AutoValue_Sheet(uuid, imagePath, groupUuid, dateModified);
+    }
+
+    public static Sheet create(String imagePath, String groupUuid) {
+        return create(UUID.randomUUID().toString(), imagePath, groupUuid, Calendar.getInstance().getTime());
+    }
+
+    public static Sheet create(Sheet sheet) {
+        return create(sheet.uuid(), sheet.imagePath(), sheet.groupUuid(), sheet.dateModified());
+    }
+
     public abstract String uuid();
 
-    public abstract byte[] image();
+    public abstract String imagePath();
 
     public abstract String groupUuid();
 
     public abstract Date dateModified();
-
-    public static Sheet create(String uuid, byte[] image, String groupUuid, Date dateModified) {
-        return new AutoValue_Sheet(uuid, image, groupUuid, dateModified);
-    }
-
-    public static Sheet create(byte[] image, String groupUuid) {
-        return create(UUID.randomUUID().toString(), image, groupUuid, Calendar.getInstance().getTime());
-    }
-
-    public static Sheet create(Sheet sheet) {
-        return create(sheet.uuid(), sheet.image(), sheet.groupUuid(), sheet.dateModified());
-    }
 }

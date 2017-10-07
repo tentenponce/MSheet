@@ -12,7 +12,9 @@ import java.util.List;
 
 public interface LibraryMvpView extends MvpView {
 
-    void showAddSheet(Sheet sheet);
+    void showAddSheet();
+
+    void showDeleteSheet();
 
     void showMusicSheets(List<Sheet> sheets);
 }

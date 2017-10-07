@@ -1,5 +1,7 @@
 package com.tcorner.msheet.ui.library;
 
+import android.util.Log;
+
 import com.tcorner.msheet.data.DataManager;
 import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.ui.base.BasePresenter;
@@ -9,8 +11,10 @@ import java.util.List;
 
 import javax.inject.Inject;
 
-import io.reactivex.disposables.CompositeDisposable;
-import io.reactivex.observers.TestObserver;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -21,17 +25,11 @@ import io.reactivex.schedulers.Schedulers;
 public class LibraryPresenter extends BasePresenter<LibraryMvpView> {
 
     private final DataManager dataManager;
-    private CompositeDisposable disposable;
+    private Disposable disposable;
 
     @Inject
-    public LibraryPresenter(DataManager dataManager) {
+    LibraryPresenter(DataManager dataManager) {
         this.dataManager = dataManager;
-        disposable = new CompositeDisposable();
-    }
-
-    @Override
-    public void attachView(LibraryMvpView mvpView) {
-        super.attachView(mvpView);
     }
 
     @Override
@@ -40,37 +38,94 @@ public class LibraryPresenter extends BasePresenter<LibraryMvpView> {
         if (disposable != null) disposable.dispose();
     }
 
-    public void addSheet(Sheet sheet) {
+    void addSheet(Sheet sheet) {
         checkViewAttached();
         RxUtil.unsubscribe(disposable);
 
-        disposable.add(dataManager.addSheet(sheet)
+        dataManager.addSheet(sheet)
                 .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.newThread())
-                .subscribeWith(new TestObserver<Sheet>() {
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Sheet>() {
                     @Override
-                    public void onNext(Sheet sheet) {
-                        super.onNext(sheet);
-
-                        getMvpView().showAddSheet(sheet);
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
                     }
-                }));
+
+                    @Override
+                    public void onNext(@NonNull Sheet sheet) {
+                        /**/
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        getMvpView().showError();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        getMvpView().showAddSheet();
+                    }
+                });
     }
 
-    public void getSheets() {
+    void getSheets() {
         checkViewAttached();
         RxUtil.unsubscribe(disposable);
 
-        disposable.add(dataManager.getSheets()
+        dataManager.getSheets()
                 .subscribeOn(Schedulers.io())
-                .observeOn(Schedulers.newThread())
-                .subscribeWith(new TestObserver<List<Sheet>>() {
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<List<Sheet>>() {
                     @Override
-                    public void onNext(List<Sheet> sheets) {
-                        super.onNext(sheets);
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
+                    }
 
+                    @Override
+                    public void onNext(@NonNull List<Sheet> sheets) {
                         getMvpView().showMusicSheets(sheets);
                     }
-                }));
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        Log.e("androidruntime", "Errorrrr: " + e.getMessage());
+                        getMvpView().showError();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        /**/
+                    }
+                });
+    }
+
+    public void deleteSheet(String uuid) {
+        checkViewAttached();
+        RxUtil.unsubscribe(disposable);
+
+        dataManager.deleteSheet(uuid)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Sheet>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onNext(@NonNull Sheet sheet) {
+                        /**/
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        getMvpView().showError();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        getMvpView().showDeleteSheet();
+                    }
+                });
     }
 }

@@ -54,4 +54,19 @@ public class DatabaseHelper {
                     }
                 });
     }
+
+    public Observable<Sheet> deleteSheet(final String uuid) {
+        return Observable.create(new ObservableOnSubscribe<Sheet>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Sheet> e) throws Exception {
+                if (e.isDisposed()) return;
+
+                mDb.delete(Db.SheetTable.TABLE_NAME,
+                        Db.SheetTable.COLUMN_UUID + "=?",
+                        uuid);
+
+                e.onComplete();
+            }
+        });
+    }
 }
