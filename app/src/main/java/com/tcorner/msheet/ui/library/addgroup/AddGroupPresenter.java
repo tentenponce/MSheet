@@ -1,11 +1,9 @@
-package com.tcorner.msheet.ui.library;
+package com.tcorner.msheet.ui.library.addgroup;
 
 import com.tcorner.msheet.data.DataManager;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.ui.base.BasePresenter;
 import com.tcorner.msheet.util.RxUtil;
-
-import java.util.List;
 
 import javax.inject.Inject;
 
@@ -16,17 +14,17 @@ import io.reactivex.disposables.Disposable;
 import io.reactivex.schedulers.Schedulers;
 
 /**
- * library presenter
- * Created by Exequiel Egbert V. Ponce on 9/14/2017.
+ * add group presenter
+ * Created by Tenten Ponce on 10/8/2017.
  */
 
-public class LibraryPresenter extends BasePresenter<LibraryMvpView> {
+class AddGroupPresenter extends BasePresenter<AddGroupMvpView> {
 
     private final DataManager dataManager;
     private Disposable disposable;
 
     @Inject
-    LibraryPresenter(DataManager dataManager) {
+    AddGroupPresenter(DataManager dataManager) {
         this.dataManager = dataManager;
     }
 
@@ -36,41 +34,11 @@ public class LibraryPresenter extends BasePresenter<LibraryMvpView> {
         if (disposable != null) disposable.dispose();
     }
 
-    void getGroups() {
+    void addGroup(Group group) {
         checkViewAttached();
         RxUtil.dispose(disposable);
 
-        dataManager.getGroups()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<List<Group>>() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable d) {
-                        disposable = d;
-                    }
-
-                    @Override
-                    public void onNext(@NonNull List<Group> groups) {
-                        getMvpView().showGroups(groups);
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        getMvpView().showError();
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        /**/
-                    }
-                });
-    }
-
-    void deleteGroup(String uuid) {
-        checkViewAttached();
-        RxUtil.dispose(disposable);
-
-        dataManager.deleteGroup(uuid)
+        dataManager.addGroup(group)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<Group>() {
@@ -81,7 +49,7 @@ public class LibraryPresenter extends BasePresenter<LibraryMvpView> {
 
                     @Override
                     public void onNext(@NonNull Group group) {
-                        /**/
+                        getMvpView().showAddGroup(group);
                     }
 
                     @Override
@@ -91,7 +59,7 @@ public class LibraryPresenter extends BasePresenter<LibraryMvpView> {
 
                     @Override
                     public void onComplete() {
-                        getMvpView().showDeleteGroup();
+                        /**/
                     }
                 });
     }

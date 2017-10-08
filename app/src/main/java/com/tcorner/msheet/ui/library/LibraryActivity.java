@@ -15,15 +15,15 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.webkit.MimeTypeMap;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.tcorner.msheet.R;
-import com.tcorner.msheet.data.model.Sheet;
+import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.ui.base.BaseActivity;
+import com.tcorner.msheet.ui.library.addgroup.AddGroupActivity;
 import com.tcorner.msheet.util.FileUtil;
-import com.tcorner.msheet.util.ImageUtil;
 import com.tcorner.msheet.util.RxUtil;
 
 import java.io.File;
@@ -80,7 +80,13 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
         libraryPresenter.attachView(this);
 
         initViews();
-        libraryPresenter.getSheets();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        libraryPresenter.getGroups();
     }
 
     @Override
@@ -88,54 +94,42 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
         super.onDestroy();
 
         libraryPresenter.detachView();
-        RxUtil.unsubscribe(disposable);
+        RxUtil.dispose(disposable);
     }
 
     @Override
-    public void showError() {
-        Toast.makeText(this, "Awww! Problem alert! Call Tenten", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void showAddSheet() {
-        Toast.makeText(this, "Success adding sheets.", Toast.LENGTH_SHORT).show();
-        libraryPresenter.getSheets();
-    }
-
-    @Override
-    public void showDeleteSheet() {
+    public void showDeleteGroup() {
         Toast.makeText(this, "Sheet successfully deleted.", Toast.LENGTH_SHORT).show();
-        libraryPresenter.getSheets();
+        libraryPresenter.getGroups();
     }
 
     @Override
-    public void showMusicSheets(final List<Sheet> sheets) {
+    public void showGroups(final List<Group> groups) {
         linSheets.removeAllViews();
 
-        RxUtil.unsubscribe(disposable);
-        Observable.fromIterable(sheets)
+        RxUtil.dispose(disposable);
+        Observable.fromIterable(groups)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Sheet>() {
+                .subscribe(new Observer<Group>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
                         disposable = d;
                     }
 
                     @Override
-                    public void onNext(@NonNull final Sheet sheet) {
-                        ImageView imageView = new ImageView(LibraryActivity.this.getApplicationContext());
+                    public void onNext(@NonNull final Group group) {
+                        TextView textView = new TextView(LibraryActivity.this.getApplicationContext());
+                        textView.setText(group.name());
 
-                        ImageUtil.loadToGlide(getApplicationContext(), imageView, sheet.imagePath());
-
-                        imageView.setOnClickListener(new View.OnClickListener() {
+                        textView.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View view) {
-                                libraryPresenter.deleteSheet(sheet.uuid());
+                                libraryPresenter.deleteGroup(group.uuid());
                             }
                         });
 
-                        linSheets.addView(imageView);
+                        linSheets.addView(textView);
                     }
 
                     @Override
@@ -175,7 +169,8 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.fab_add_sheet) {
-            showFileChooser();
+            Intent intent = new Intent(this, AddGroupActivity.class);
+            startActivity(intent);
         }
     }
 
@@ -202,7 +197,7 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
 
                     @Override
                     public void onNext(@NonNull String s) {
-                        libraryPresenter.addSheet(Sheet.create(s, "123"));
+//                        libraryPresenter.addGroup(Sheet.create(s, "123"));
                     }
 
                     @Override
@@ -241,7 +236,7 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
 
         final File mypath = new File(directory, UUID.randomUUID().toString() + "." + ext); //build the name to be save
 
-        RxUtil.unsubscribe(disposable);
+        RxUtil.dispose(disposable);
         return Observable.zip(Observable.create(new ObservableOnSubscribe<FileOutputStream>() {
             @Override
             public void subscribe(@NonNull ObservableEmitter<FileOutputStream> e) throws FileNotFoundException {

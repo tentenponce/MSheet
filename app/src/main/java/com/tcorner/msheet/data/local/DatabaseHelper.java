@@ -4,6 +4,7 @@ import android.database.Cursor;
 
 import com.squareup.sqlbrite2.BriteDatabase;
 import com.squareup.sqlbrite2.SqlBrite;
+import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.Sheet;
 
 import java.util.List;
@@ -24,21 +25,19 @@ public class DatabaseHelper {
     private final BriteDatabase mDb;
 
     @Inject
-    public DatabaseHelper(DbOpenHelper dbOpenHelper) {
+    DatabaseHelper(DbOpenHelper dbOpenHelper) {
         SqlBrite.Builder briteBuilder = new SqlBrite.Builder();
         mDb = briteBuilder.build().wrapDatabaseHelper(dbOpenHelper, Schedulers.computation());
     }
 
-    public BriteDatabase getBriteDb() {
-        return mDb;
-    }
-
+    /* Sheet Database */
     public Observable<Sheet> addSheet(final Sheet sheet) {
         return Observable.create(new ObservableOnSubscribe<Sheet>() {
             @Override
-            public void subscribe(@NonNull ObservableEmitter<Sheet> e) throws Exception {
+            public void subscribe(@NonNull ObservableEmitter<Sheet> e) {
                 if (e.isDisposed()) return;
                 mDb.insert(Db.SheetTable.TABLE_NAME, Db.SheetTable.toContentValues(sheet));
+                e.onNext(sheet);
                 e.onComplete();
             }
         });
@@ -63,6 +62,45 @@ public class DatabaseHelper {
 
                 mDb.delete(Db.SheetTable.TABLE_NAME,
                         Db.SheetTable.COLUMN_UUID + "=?",
+                        uuid);
+
+                e.onComplete();
+            }
+        });
+    }
+
+    /* Group Database */
+    public Observable<Group> addGroup(final Group group) {
+        return Observable.create(new ObservableOnSubscribe<Group>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Group> e) {
+                if (e.isDisposed()) return;
+                mDb.insert(Db.GroupTable.TABLE_NAME, Db.GroupTable.toContentValues(group));
+                e.onNext(group);
+                e.onComplete();
+            }
+        });
+    }
+
+    public Observable<List<Group>> getGroups() {
+        return mDb.createQuery(Db.GroupTable.TABLE_NAME,
+                "SELECT * FROM " + Db.GroupTable.TABLE_NAME)
+                .mapToList(new Function<Cursor, Group>() {
+                    @Override
+                    public Group apply(@NonNull Cursor cursor) throws Exception {
+                        return Group.create(Db.GroupTable.parseCursor(cursor));
+                    }
+                });
+    }
+
+    public Observable<Group> deleteGroup(final String uuid) {
+        return Observable.create(new ObservableOnSubscribe<Group>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Group> e) throws Exception {
+                if (e.isDisposed()) return;
+
+                mDb.delete(Db.GroupTable.TABLE_NAME,
+                        Db.GroupTable.COLUMN_UUID + "=?",
                         uuid);
 
                 e.onComplete();

@@ -1,6 +1,7 @@
 package com.tcorner.msheet.data;
 
 import com.tcorner.msheet.data.local.DatabaseHelper;
+import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.Sheet;
 
 import java.util.List;
@@ -35,5 +36,17 @@ public class DataManager {
 
     public Observable<List<Sheet>> getSheets() {
         return databaseHelper.getSheets();
+    }
+
+    public Observable<Group> addGroup(Group group) {
+        return databaseHelper.addGroup(group);
+    }
+
+    public Observable<Group> deleteGroup(String uuid) {
+        return databaseHelper.deleteGroup(uuid);
+    }
+
+    public Observable<List<Group>> getGroups() {
+        return databaseHelper.getGroups();
     }
 }

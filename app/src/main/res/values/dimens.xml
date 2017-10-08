@@ -20,4 +20,8 @@
     <dimen name="edittext_drawable_padding_left">10dp</dimen>
     <dimen name="title_margin_top">18dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
+
+    <dimen name="s_margin">5dp</dimen>
+    <dimen name="m_margin">10dp</dimen>
+    <dimen name="l_margin">13dp</dimen>
 </resources>

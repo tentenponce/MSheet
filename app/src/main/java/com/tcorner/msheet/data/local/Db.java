@@ -3,25 +3,70 @@ package com.tcorner.msheet.data.local;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.util.DateUtil;
 
 import java.text.ParseException;
+import java.util.ArrayList;
 
-public class Db {
+class Db {
 
-    public Db() {
+    private Db() {
     }
 
-    public abstract static class SheetTable {
-        public static final String TABLE_NAME = "sheetTable";
+    abstract static class GroupTable {
+        static final String TABLE_NAME = "groupTable";
 
-        public static final String COLUMN_UUID = "uuid";
-        public static final String COLUMN_IMAGE = "image";
-        public static final String COLUMN_GROUP_UUID = "groupUuid";
-        public static final String COLUMN_DATE_MODIFIED = "dateModified";
+        static final String COLUMN_UUID = "uuid";
+        static final String COLUMN_NAME = "name";
+        static final String COLUMN_DATE_MODIFIED = "dateModified";
 
-        public static final String CREATE =
+        static final String CREATE =
+                "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
+                        COLUMN_UUID + " TEXT PRIAMRY KEY, " +
+                        COLUMN_NAME + " TEXT NOT NULL, " +
+                        COLUMN_DATE_MODIFIED + " DATETIME" +
+                        ");";
+
+        private GroupTable() {
+        }
+
+        static ContentValues toContentValues(Group group) {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_UUID, group.uuid());
+            values.put(COLUMN_NAME, group.name());
+            values.put(COLUMN_DATE_MODIFIED, DateUtil.formatDate(group.dateModified(),
+                    DateUtil.RAW_FORMAT_DATE));
+
+            return values;
+        }
+
+        static Group parseCursor(Cursor cursor) {
+            try {
+                return Group.create(
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)),
+                        DateUtil.parseDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE_MODIFIED))),
+                        new ArrayList<String>());
+            } catch (ParseException e) {
+                return Group.create(
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)),
+                        null, new ArrayList<String>());
+            }
+        }
+    }
+
+    abstract static class SheetTable {
+        static final String TABLE_NAME = "sheetTable";
+
+        static final String COLUMN_UUID = "uuid";
+        static final String COLUMN_IMAGE = "image";
+        static final String COLUMN_GROUP_UUID = "groupUuid";
+        static final String COLUMN_DATE_MODIFIED = "dateModified";
+
+        static final String CREATE =
                 "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
                         COLUMN_UUID + " TEXT PRIMARY KEY, " +
                         COLUMN_IMAGE + " TEXT NOT NULL, " +
@@ -29,7 +74,10 @@ public class Db {
                         COLUMN_DATE_MODIFIED + " DATETIME" +
                         ");";
 
-        public static ContentValues toContentValues(Sheet sheet) {
+        private SheetTable() {
+        }
+
+        static ContentValues toContentValues(Sheet sheet) {
             ContentValues values = new ContentValues();
             values.put(COLUMN_UUID, sheet.uuid());
             values.put(COLUMN_IMAGE, sheet.imagePath());
@@ -40,7 +88,7 @@ public class Db {
             return values;
         }
 
-        public static Sheet parseCursor(Cursor cursor) {
+        static Sheet parseCursor(Cursor cursor) {
             try {
                 return Sheet.create(
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),

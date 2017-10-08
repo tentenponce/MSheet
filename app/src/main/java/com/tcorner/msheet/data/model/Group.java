@@ -1,7 +1,11 @@
 package com.tcorner.msheet.data.model;
 
+import com.google.auto.value.AutoValue;
+
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * group of piano sheets/piece
@@ -9,42 +13,26 @@ import java.util.List;
  * Created by Exequiel Egbert V. Ponce on 9/12/2017.
  */
 
-public class Group {
+@AutoValue
+public abstract class Group {
 
-    private String uuid;
-    private String name;
-    private Date dateModified;
-    private List<String> tags;
-
-    public String getUuid() {
-        return uuid;
+    public static Group create(String uuid, String name, Date dateModified, List<String> tags) {
+        return new AutoValue_Group(uuid, name, dateModified, tags);
     }
 
-    public void setUuid(String uuid) {
-        this.uuid = uuid;
+    public static Group create(String name, List<String> tags) {
+        return create(UUID.randomUUID().toString(), name, Calendar.getInstance().getTime(), tags);
     }
 
-    public String getName() {
-        return name;
+    public static Group create(Group group) {
+        return create(group.uuid(), group.name(), group.dateModified(), group.tags());
     }
 
-    public void setName(String name) {
-        this.name = name;
-    }
+    public abstract String uuid();
 
-    public Date getDateModified() {
-        return dateModified;
-    }
+    public abstract String name();
 
-    public void setDateModified(Date dateModified) {
-        this.dateModified = dateModified;
-    }
+    public abstract Date dateModified();
 
-    public List<String> getTags() {
-        return tags;
-    }
-
-    public void setTags(List<String> tags) {
-        this.tags = tags;
-    }
+    public abstract List<String> tags();
 }
