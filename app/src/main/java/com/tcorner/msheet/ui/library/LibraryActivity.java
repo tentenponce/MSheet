@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.LinearLayout;
@@ -21,6 +22,7 @@ import android.widget.Toast;
 
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
+import com.tcorner.msheet.data.model.GroupTag;
 import com.tcorner.msheet.ui.base.BaseActivity;
 import com.tcorner.msheet.ui.library.addgroup.AddGroupActivity;
 import com.tcorner.msheet.util.FileUtil;
@@ -30,7 +32,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -86,6 +87,7 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     protected void onResume() {
         super.onResume();
 
+        linSheets.removeAllViews();
         libraryPresenter.getGroups();
     }
 
@@ -100,48 +102,32 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     @Override
     public void showDeleteGroup() {
         Toast.makeText(this, "Sheet successfully deleted.", Toast.LENGTH_SHORT).show();
+
+        linSheets.removeAllViews();
         libraryPresenter.getGroups();
     }
 
     @Override
-    public void showGroups(final List<Group> groups) {
-        linSheets.removeAllViews();
+    public void showGroup(final Group group) {
+        Log.e("androidruntime", "showing group: " + group.name());
+        TextView textView = new TextView(LibraryActivity.this.getApplicationContext());
+        textView.setText(group.name());
 
-        RxUtil.dispose(disposable);
-        Observable.fromIterable(groups)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Group>() {
-                    @Override
-                    public void onSubscribe(@NonNull Disposable d) {
-                        disposable = d;
-                    }
+        textView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                libraryPresenter.deleteGroup(group.uuid());
+            }
+        });
 
-                    @Override
-                    public void onNext(@NonNull final Group group) {
-                        TextView textView = new TextView(LibraryActivity.this.getApplicationContext());
-                        textView.setText(group.name());
+        linSheets.addView(textView);
 
-                        textView.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View view) {
-                                libraryPresenter.deleteGroup(group.uuid());
-                            }
-                        });
+        for (GroupTag groupTag : group.tags()) {
+            TextView tvGroupTag = new TextView(LibraryActivity.this.getApplicationContext());
+            tvGroupTag.setText("Tag: " + groupTag.tag());
 
-                        linSheets.addView(textView);
-                    }
-
-                    @Override
-                    public void onError(@NonNull Throwable e) {
-                        /**/
-                    }
-
-                    @Override
-                    public void onComplete() {
-                        /**/
-                    }
-                });
+            linSheets.addView(tvGroupTag);
+        }
     }
 
     @Override

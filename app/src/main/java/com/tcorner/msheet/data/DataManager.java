@@ -2,6 +2,7 @@ package com.tcorner.msheet.data;
 
 import com.tcorner.msheet.data.local.DatabaseHelper;
 import com.tcorner.msheet.data.model.Group;
+import com.tcorner.msheet.data.model.GroupTag;
 import com.tcorner.msheet.data.model.Sheet;
 
 import java.util.List;
@@ -48,5 +49,21 @@ public class DataManager {
 
     public Observable<List<Group>> getGroups() {
         return databaseHelper.getGroups();
+    }
+
+    public Observable<List<GroupTag>> addGroupTags(List<GroupTag> groupTags) {
+        return databaseHelper.addGroupTags(groupTags);
+    }
+
+    public Observable<GroupTag> deleteGroupTag(String uuid) {
+        return databaseHelper.deleteGroupTag(uuid);
+    }
+
+    public Observable<List<GroupTag>> getGroupTagsByGroup(String groupUuid) {
+        return databaseHelper.getGroupTagsByGroup(groupUuid);
+    }
+
+    public Observable<List<GroupTag>> getGroupTags() {
+        return databaseHelper.getGroupTags();
     }
 }

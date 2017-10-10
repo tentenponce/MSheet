@@ -16,11 +16,11 @@ import java.util.UUID;
 @AutoValue
 public abstract class Group {
 
-    public static Group create(String uuid, String name, Date dateModified, List<String> tags) {
+    public static Group create(String uuid, String name, Date dateModified, List<GroupTag> tags) {
         return new AutoValue_Group(uuid, name, dateModified, tags);
     }
 
-    public static Group create(String name, List<String> tags) {
+    public static Group create(String name, List<GroupTag> tags) {
         return create(UUID.randomUUID().toString(), name, Calendar.getInstance().getTime(), tags);
     }
 
@@ -34,5 +34,5 @@ public abstract class Group {
 
     public abstract Date dateModified();
 
-    public abstract List<String> tags();
+    public abstract List<GroupTag> tags();
 }

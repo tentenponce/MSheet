@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 
 import com.tcorner.msheet.data.model.Group;
+import com.tcorner.msheet.data.model.GroupTag;
 import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.util.DateUtil;
 
@@ -15,6 +16,53 @@ class Db {
     private Db() {
     }
 
+    abstract static class GroupTagTable {
+        static final String TABLE_NAME = "groupTagTable";
+
+        static final String COLUMN_UUID = "uuid";
+        static final String COLUMN_TAG = "tag";
+        static final String COLUMN_GROUP_UUID = "group_uuid";
+        static final String COLUMN_DATE_MODIFIED = "dateModified";
+
+        static final String CREATE =
+                "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
+                        COLUMN_UUID + " TEXT PRIMARY KEY, " +
+                        COLUMN_GROUP_UUID + " TEXT NOT NULL, " +
+                        COLUMN_TAG + " TEXT NOT NULL, " +
+                        COLUMN_DATE_MODIFIED + " DATETIME" +
+                        ");";
+
+        private GroupTagTable() {
+        }
+
+        static ContentValues toContentValues(GroupTag groupTag) {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_UUID, groupTag.uuid());
+            values.put(COLUMN_TAG, groupTag.tag());
+            values.put(COLUMN_GROUP_UUID, groupTag.groupUuid());
+            values.put(COLUMN_DATE_MODIFIED, DateUtil.formatDate(groupTag.dateModified(),
+                    DateUtil.RAW_FORMAT_DATE));
+
+            return values;
+        }
+
+        static GroupTag parseCursor(Cursor cursor) {
+            try {
+                return GroupTag.create(
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TAG)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GROUP_UUID)),
+                        DateUtil.parseDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE_MODIFIED))));
+            } catch (ParseException e) {
+                return GroupTag.create(
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TAG)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GROUP_UUID)),
+                        null);
+            }
+        }
+    }
+
     abstract static class GroupTable {
         static final String TABLE_NAME = "groupTable";
 
@@ -24,7 +72,7 @@ class Db {
 
         static final String CREATE =
                 "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
-                        COLUMN_UUID + " TEXT PRIAMRY KEY, " +
+                        COLUMN_UUID + " TEXT PRIMARY KEY, " +
                         COLUMN_NAME + " TEXT NOT NULL, " +
                         COLUMN_DATE_MODIFIED + " DATETIME" +
                         ");";
@@ -48,12 +96,12 @@ class Db {
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)),
                         DateUtil.parseDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE_MODIFIED))),
-                        new ArrayList<String>());
+                        new ArrayList<GroupTag>());
             } catch (ParseException e) {
                 return Group.create(
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)),
-                        null, new ArrayList<String>());
+                        null, new ArrayList<GroupTag>());
             }
         }
     }

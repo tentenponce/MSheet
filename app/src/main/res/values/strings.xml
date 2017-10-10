@@ -7,4 +7,5 @@
     <string name="et_piece_name">Piece Name</string>
     <string name="tv_group_tags">Add Tags to Your Piece</string>
     <string name="title_add_piece">Add Piece</string>
+    <string name="error_piece_name_empty">Piece name cannot be empty.</string>
 </resources>

@@ -12,9 +12,12 @@ import android.view.View;
 
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
+import com.tcorner.msheet.data.model.GroupTag;
 import com.tcorner.msheet.ui.base.BaseActivity;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -77,11 +80,17 @@ public class AddGroupActivity extends BaseActivity implements AddGroupMvpView, V
             String pieceName = textInputGroupName.getEditText().getText().toString().trim();
 
             if (pieceName.isEmpty()) {
-                Snackbar.make(coorAddGroup, "Piece name cannot be empty.", Snackbar.LENGTH_LONG).show();
+                Snackbar.make(coorAddGroup, R.string.error_piece_name_empty, Snackbar.LENGTH_LONG).show();
             } else {
-                Group group = Group.create(pieceName, Arrays.asList(tagGroup.getTags()));
+                List<GroupTag> groupTags = new ArrayList<>();
+
+                Group group = Group.create(pieceName, new ArrayList<GroupTag>()); //build here to get uuid
+                for (String tag : Arrays.asList(tagGroup.getTags())) {
+                    groupTags.add(GroupTag.create(tag, group.uuid()));
+                }
+
+                group.tags().addAll(groupTags); //add all tags
                 addGroupPresenter.addGroup(group);
-                onBackPressed();
             }
         }
     }

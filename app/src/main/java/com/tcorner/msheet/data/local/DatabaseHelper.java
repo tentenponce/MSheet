@@ -5,6 +5,7 @@ import android.database.Cursor;
 import com.squareup.sqlbrite2.BriteDatabase;
 import com.squareup.sqlbrite2.SqlBrite;
 import com.tcorner.msheet.data.model.Group;
+import com.tcorner.msheet.data.model.GroupTag;
 import com.tcorner.msheet.data.model.Sheet;
 
 import java.util.List;
@@ -106,5 +107,67 @@ public class DatabaseHelper {
                 e.onComplete();
             }
         });
+    }
+
+    /* Group Tag Database */
+    public Observable<List<GroupTag>> addGroupTags(final List<GroupTag> groupTags) {
+        return Observable.create(new ObservableOnSubscribe<List<GroupTag>>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<List<GroupTag>> e) {
+                if (e.isDisposed()) return;
+
+                BriteDatabase.Transaction transaction = mDb.newTransaction();
+                try {
+                    for (GroupTag groupTag : groupTags) {
+                        mDb.insert(Db.GroupTagTable.TABLE_NAME, Db.GroupTagTable.toContentValues(groupTag));
+                    }
+
+                    transaction.markSuccessful();
+                } finally {
+                    transaction.end();
+                }
+
+                e.onNext(groupTags);
+                e.onComplete();
+            }
+        });
+    }
+
+    public Observable<GroupTag> deleteGroupTag(final String uuid) {
+        return Observable.create(new ObservableOnSubscribe<GroupTag>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<GroupTag> e) {
+                if (e.isDisposed()) return;
+
+                mDb.delete(Db.GroupTagTable.TABLE_NAME,
+                        Db.GroupTagTable.COLUMN_UUID + "=?",
+                        uuid);
+
+                e.onComplete();
+            }
+        });
+    }
+
+    public Observable<List<GroupTag>> getGroupTagsByGroup(String groupUuid) {
+        return mDb.createQuery(Db.GroupTagTable.TABLE_NAME,
+                "SELECT * FROM " + Db.GroupTagTable.TABLE_NAME + " WHERE " + Db.GroupTagTable.COLUMN_GROUP_UUID + "=?",
+                groupUuid)
+                .mapToList(new Function<Cursor, GroupTag>() {
+                    @Override
+                    public GroupTag apply(@NonNull Cursor cursor) throws Exception {
+                        return GroupTag.create(Db.GroupTagTable.parseCursor(cursor));
+                    }
+                });
+    }
+
+    public Observable<List<GroupTag>> getGroupTags() {
+        return mDb.createQuery(Db.GroupTagTable.TABLE_NAME,
+                "SELECT * FROM " + Db.GroupTagTable.TABLE_NAME)
+                .mapToList(new Function<Cursor, GroupTag>() {
+                    @Override
+                    public GroupTag apply(@NonNull Cursor cursor) throws Exception {
+                        return GroupTag.create(Db.GroupTagTable.parseCursor(cursor));
+                    }
+                });
     }
 }
