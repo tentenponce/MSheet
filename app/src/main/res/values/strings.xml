@@ -8,4 +8,7 @@
     <string name="tv_group_tags">Add Tags to Your Piece</string>
     <string name="title_add_piece">Add Piece</string>
     <string name="error_piece_name_empty">Piece name cannot be empty.</string>
+    <string name="dialog_delete_group_title">Delete Group</string>
+    <string name="dialog_delete_group_message">Are you sure you want to remove this beautiful piece?</string>
+    <string name="dialog_delete_group_ok">OK</string>
 </resources>

@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
@@ -12,17 +13,19 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.webkit.MimeTypeMap;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.IAdapter;
+import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
-import com.tcorner.msheet.data.model.GroupTag;
 import com.tcorner.msheet.ui.base.BaseActivity;
 import com.tcorner.msheet.ui.library.addgroup.AddGroupActivity;
 import com.tcorner.msheet.util.FileUtil;
@@ -63,13 +66,18 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     @BindView(R.id.fab_add_sheet)
     FloatingActionButton fabAddSheet;
 
-    @BindView(R.id.lin_sheets)
-    LinearLayout linSheets;
+    @BindView(R.id.rv_sheets)
+    RecyclerView rvSheets;
 
     @Inject
     LibraryPresenter libraryPresenter;
 
+    FastItemAdapter<Group> fastItemAdapter;
+
     private Disposable disposable;
+
+    private AlertDialog deleteGroupDialog;
+    private Group deleteGroup;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -87,7 +95,7 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     protected void onResume() {
         super.onResume();
 
-        linSheets.removeAllViews();
+        fastItemAdapter.clear();
         libraryPresenter.getGroups();
     }
 
@@ -103,31 +111,14 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     public void showDeleteGroup() {
         Toast.makeText(this, "Sheet successfully deleted.", Toast.LENGTH_SHORT).show();
 
-        linSheets.removeAllViews();
+        fastItemAdapter.clear();
         libraryPresenter.getGroups();
     }
 
     @Override
     public void showGroup(final Group group) {
-        Log.e("androidruntime", "showing group: " + group.name());
-        TextView textView = new TextView(LibraryActivity.this.getApplicationContext());
-        textView.setText(group.name());
-
-        textView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                libraryPresenter.deleteGroup(group.uuid());
-            }
-        });
-
-        linSheets.addView(textView);
-
-        for (GroupTag groupTag : group.tags()) {
-            TextView tvGroupTag = new TextView(LibraryActivity.this.getApplicationContext());
-            tvGroupTag.setText("Tag: " + groupTag.tag());
-
-            linSheets.addView(tvGroupTag);
-        }
+        fastItemAdapter.add(group);
+        fastItemAdapter.notifyDataSetChanged();
     }
 
     @Override
@@ -169,6 +160,34 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
 
         /* init click listeners */
         fabAddSheet.setOnClickListener(this);
+
+        /* init recyclerview */
+        fastItemAdapter = new FastItemAdapter<>();
+
+        rvSheets.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        rvSheets.setAdapter(fastItemAdapter);
+
+        fastItemAdapter.withOnLongClickListener(new FastAdapter.OnLongClickListener<Group>() {
+            @Override
+            public boolean onLongClick(View v, IAdapter<Group> adapter, Group item, int position) {
+                deleteGroup = item;
+                deleteGroupDialog.show();
+                return true;
+            }
+        });
+
+        /* init dialogs */
+        deleteGroupDialog = new AlertDialog.Builder(LibraryActivity.this)
+                .setTitle(R.string.dialog_delete_group_title)
+                .setMessage(R.string.dialog_delete_group_message)
+                .setPositiveButton(R.string.dialog_delete_group_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (deleteGroup != null) {
+                            libraryPresenter.deleteGroup(deleteGroup.uuid());
+                        }
+                    }
+                }).create();
     }
 
     private void onChooseFile(Uri selectedFileUri) {
