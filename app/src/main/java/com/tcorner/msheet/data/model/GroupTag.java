@@ -1,5 +1,7 @@
 package com.tcorner.msheet.data.model;
 
+import android.os.Parcelable;
+
 import com.google.auto.value.AutoValue;
 
 import java.util.Calendar;
@@ -12,7 +14,7 @@ import java.util.UUID;
  */
 
 @AutoValue
-public abstract class GroupTag {
+public abstract class GroupTag implements Parcelable {
 
     public static GroupTag create(String uuid, String tag, String groupUuid, Date dateModified) {
         return new AutoValue_GroupTag(uuid, tag, groupUuid, dateModified);

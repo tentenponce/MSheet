@@ -55,6 +55,18 @@ public class DatabaseHelper {
                 });
     }
 
+    public Observable<List<Sheet>> getGroupSheets(Group group) {
+        return mDb.createQuery(Db.SheetTable.TABLE_NAME,
+                "SELECT * FROM " + Db.SheetTable.TABLE_NAME + " WHERE " + Db.SheetTable.COLUMN_GROUP_UUID + "=?",
+                group.uuid())
+                .mapToList(new Function<Cursor, Sheet>() {
+                    @Override
+                    public Sheet apply(@NonNull Cursor cursor) throws Exception {
+                        return Sheet.create(Db.SheetTable.parseCursor(cursor));
+                    }
+                });
+    }
+
     public Observable<Sheet> deleteSheet(final String uuid) {
         return Observable.create(new ObservableOnSubscribe<Sheet>() {
             @Override

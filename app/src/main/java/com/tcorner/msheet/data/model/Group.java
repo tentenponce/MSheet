@@ -1,5 +1,6 @@
 package com.tcorner.msheet.data.model;
 
+import android.os.Parcelable;
 import android.support.v7.widget.AppCompatTextView;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -25,7 +26,7 @@ import me.gujun.android.taggroup.TagGroup;
  */
 
 @AutoValue
-public abstract class Group extends AbstractItem<Group, Group.ViewHolder> {
+public abstract class Group extends AbstractItem<Group, Group.ViewHolder> implements Parcelable {
 
     public static Group create(String uuid, String name, Date dateModified, List<GroupTag> tags) {
         return new AutoValue_Group(uuid, name, dateModified, tags);

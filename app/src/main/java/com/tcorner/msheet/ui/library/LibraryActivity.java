@@ -28,7 +28,9 @@ import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.ui.base.BaseActivity;
 import com.tcorner.msheet.ui.library.addgroup.AddGroupActivity;
+import com.tcorner.msheet.ui.sheet.SheetActivity;
 import com.tcorner.msheet.util.FileUtil;
+import com.tcorner.msheet.util.IntentUtil;
 import com.tcorner.msheet.util.RxUtil;
 
 import java.io.File;
@@ -172,6 +174,16 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
             public boolean onLongClick(View v, IAdapter<Group> adapter, Group item, int position) {
                 deleteGroup = item;
                 deleteGroupDialog.show();
+                return true;
+            }
+        });
+
+        fastItemAdapter.withOnClickListener(new FastAdapter.OnClickListener<Group>() {
+            @Override
+            public boolean onClick(View v, IAdapter<Group> adapter, Group item, int position) {
+                Intent intent = new Intent(LibraryActivity.this, SheetActivity.class);
+                intent.putExtra(IntentUtil.SELECTED_GROUP, item);
+                startActivity(intent);
                 return true;
             }
         });

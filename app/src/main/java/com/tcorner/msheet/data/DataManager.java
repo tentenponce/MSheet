@@ -39,6 +39,10 @@ public class DataManager {
         return databaseHelper.getSheets();
     }
 
+    public Observable<List<Sheet>> getGroupSheets(Group group) {
+        return databaseHelper.getGroupSheets(group);
+    }
+
     public Observable<Group> addGroup(Group group) {
         return databaseHelper.addGroup(group);
     }

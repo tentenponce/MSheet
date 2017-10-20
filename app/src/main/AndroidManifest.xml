@@ -19,6 +19,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".ui.library.addgroup.AddGroupActivity"/>
+        <activity android:name=".ui.sheet.SheetActivity"/>
     </application>
 
 </manifest>
