@@ -11,4 +11,8 @@ import com.tcorner.msheet.ui.base.MvpView;
 interface SheetMvpView extends MvpView {
 
     void showSheet(Sheet sheet);
+
+    void showAddSheet(Sheet sheet);
+
+    void showCompleteLoadingSheet();
 }

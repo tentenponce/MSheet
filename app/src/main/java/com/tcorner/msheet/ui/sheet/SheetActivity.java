@@ -1,25 +1,56 @@
 package com.tcorner.msheet.ui.sheet;
 
+import android.Manifest;
+import android.app.Activity;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.support.annotation.Nullable;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
+import android.webkit.MimeTypeMap;
+import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.ui.base.BaseActivity;
+import com.tcorner.msheet.util.FileUtil;
 import com.tcorner.msheet.util.IntentUtil;
+import com.tcorner.msheet.util.RxUtil;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.UUID;
 
 import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import io.reactivex.Observable;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.Observer;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.annotations.NonNull;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.BiFunction;
+import io.reactivex.schedulers.Schedulers;
 
 /**
  * displays sheet of the selected group
@@ -27,6 +58,8 @@ import butterknife.ButterKnife;
  */
 
 public class SheetActivity extends BaseActivity implements SheetMvpView, View.OnClickListener {
+
+    private static final int REQUEST_GALLERY = 1;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -37,12 +70,20 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
     @BindView(R.id.fab_add_sheet)
     FloatingActionButton fabAddSheet;
 
+    @BindView(R.id.coor_sheet)
+    CoordinatorLayout coorSheet;
+
+    @BindView(R.id.progress_bar)
+    ProgressBar progressBar;
+
     @Inject
     SheetPresenter sheetPresenter;
 
     FastItemAdapter<Sheet> fastItemAdapter;
 
     Group selectedGroup;
+
+    private Disposable disposable;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -55,14 +96,7 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
 
         init();
         initViews();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-
-        fastItemAdapter.clear();
-        sheetPresenter.getGroupSheets(selectedGroup);
+        getGroupSheets();
     }
 
     @Override
@@ -70,6 +104,7 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
         super.onDestroy();
 
         sheetPresenter.detachView();
+        RxUtil.dispose(disposable);
     }
 
     @Override
@@ -79,18 +114,51 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
     }
 
     @Override
+    public void showAddSheet(Sheet sheet) {
+        Snackbar.make(coorSheet, "Sheet Added!", Snackbar.LENGTH_SHORT).show();
+        getGroupSheets();
+    }
+
+    @Override
+    public void showCompleteLoadingSheet() {
+        Snackbar.make(coorSheet, "All sheets loaded! Yey", Snackbar.LENGTH_SHORT).show();
+    }
+
+    @Override
     public void onClick(View view) {
-        //TODO
+        if (view.getId() == R.id.fab_add_sheet) {
+            showFileChooser();
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                onBackPressed();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == android.R.id.home) {
+            onBackPressed();
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == Activity.RESULT_OK &&
+                requestCode == REQUEST_GALLERY) {
+            if (data == null) {
+                Toast.makeText(this, R.string.error_no_image, Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Uri selectedFileUri = data.getData();
+            String selectedFilePath = FileUtil.getPath(this, selectedFileUri);
+
+            if (selectedFilePath == null || selectedFilePath.equals("")) {
+                Toast.makeText(this, R.string.error_image_chooser, Toast.LENGTH_SHORT).show();
+            } else {
+                onChooseFile(selectedFileUri);
+            }
         }
     }
 
@@ -116,5 +184,94 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
 
         rvSheets.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
         rvSheets.setAdapter(fastItemAdapter);
+
+        /* init progress bar */
+        progressBar = new ProgressBar(this);
+    }
+
+    private void onChooseFile(Uri selectedFileUri) {
+        Snackbar.make(coorSheet, "Please wait while we add the sheet...", Snackbar.LENGTH_LONG).show();
+        saveToInternalStorage(selectedFileUri)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<String>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onNext(@NonNull String s) {
+                        if (selectedGroup != null) {
+                            sheetPresenter.addSheet(Sheet.create(s, selectedGroup.uuid()));
+                        }
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        Toast.makeText(SheetActivity.this, "Image failed to save.", Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        /**/
+                    }
+                });
+    }
+
+    protected void showFileChooser() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            requestPermissions(
+                    new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    1);
+        }
+
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_GET_CONTENT);
+        intent.setType("image/*");
+
+        //starts new activity to select file and return data
+        startActivityForResult(intent, REQUEST_GALLERY);
+    }
+
+    private Observable<String> saveToInternalStorage(final Uri uri) {
+        ContextWrapper cw = new ContextWrapper(getApplicationContext());
+        File directory = cw.getDir("msheet", Context.MODE_PRIVATE); //image directory
+
+        MimeTypeMap mime = MimeTypeMap.getSingleton();
+        String ext = mime.getExtensionFromMimeType(getApplicationContext().getContentResolver().getType(uri));
+
+        final File mypath = new File(directory, UUID.randomUUID().toString() + "." + ext); //build the name to be save
+
+        RxUtil.dispose(disposable);
+        return Observable.zip(Observable.create(new ObservableOnSubscribe<FileOutputStream>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<FileOutputStream> e) throws FileNotFoundException {
+                if (!e.isDisposed()) {
+                    e.onNext(new FileOutputStream(mypath));
+                    e.onComplete();
+                }
+            }
+        }), Observable.create(new ObservableOnSubscribe<Bitmap>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Bitmap> e) throws IOException {
+                if (!e.isDisposed()) {
+                    e.onNext(MediaStore.Images.Media.getBitmap(getContentResolver(), uri));
+                    e.onComplete();
+                }
+            }
+        }), new BiFunction<FileOutputStream, Bitmap, String>() {
+            @Override
+            public String apply(@NonNull FileOutputStream fileOutputStream, @NonNull Bitmap bitmap) throws Exception {
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                return mypath.getAbsolutePath();
+            }
+        });
+    }
+
+    private void getGroupSheets() {
+        Snackbar.make(coorSheet, "Loading sheets...", Snackbar.LENGTH_SHORT).show();
+        fastItemAdapter.clear();
+        sheetPresenter.getGroupSheets(selectedGroup);
     }
 }
