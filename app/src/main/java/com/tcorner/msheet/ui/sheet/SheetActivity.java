@@ -13,14 +13,13 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
-import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
@@ -36,6 +35,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import javax.inject.Inject;
@@ -73,8 +73,8 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
     @BindView(R.id.coor_sheet)
     CoordinatorLayout coorSheet;
 
-    @BindView(R.id.progress_bar)
-    ProgressBar progressBar;
+    @BindView(R.id.swipe_sheets)
+    SwipeRefreshLayout swipeSheets;
 
     @Inject
     SheetPresenter sheetPresenter;
@@ -108,20 +108,21 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
     }
 
     @Override
-    public void showSheet(Sheet sheet) {
-        fastItemAdapter.add(sheet);
+    public void showSheets(List<Sheet> sheets) {
+        swipeSheets.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeSheets.setRefreshing(false);
+            }
+        });
+        fastItemAdapter.clear();
+        fastItemAdapter.add(sheets);
         fastItemAdapter.notifyDataSetChanged();
     }
 
     @Override
     public void showAddSheet(Sheet sheet) {
-        Snackbar.make(coorSheet, "Sheet Added!", Snackbar.LENGTH_SHORT).show();
         getGroupSheets();
-    }
-
-    @Override
-    public void showCompleteLoadingSheet() {
-        Snackbar.make(coorSheet, "All sheets loaded! Yey", Snackbar.LENGTH_SHORT).show();
     }
 
     @Override
@@ -185,12 +186,16 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
         rvSheets.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
         rvSheets.setAdapter(fastItemAdapter);
 
-        /* init progress bar */
-        progressBar = new ProgressBar(this);
+        /* init swipe refresh */
+        swipeSheets.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                getGroupSheets();
+            }
+        });
     }
 
     private void onChooseFile(Uri selectedFileUri) {
-        Snackbar.make(coorSheet, "Please wait while we add the sheet...", Snackbar.LENGTH_LONG).show();
         saveToInternalStorage(selectedFileUri)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -270,8 +275,12 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
     }
 
     private void getGroupSheets() {
-        Snackbar.make(coorSheet, "Loading sheets...", Snackbar.LENGTH_SHORT).show();
-        fastItemAdapter.clear();
+        swipeSheets.post(new Runnable() {
+            @Override
+            public void run() {
+                swipeSheets.setRefreshing(true);
+            }
+        });
         sheetPresenter.getGroupSheets(selectedGroup);
     }
 }

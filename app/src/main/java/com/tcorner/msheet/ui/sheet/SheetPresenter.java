@@ -14,7 +14,6 @@ import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -72,21 +71,15 @@ class SheetPresenter extends BasePresenter<SheetMvpView> {
         dataManager.getGroupSheets(group)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .flatMapIterable(new Function<List<Sheet>, Iterable<Sheet>>() {
-                    @Override
-                    public Iterable<Sheet> apply(@NonNull List<Sheet> sheets) throws Exception {
-                        return sheets;
-                    }
-                })
-                .subscribe(new Observer<Sheet>() {
+                .subscribe(new Observer<List<Sheet>>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
                         disposable = d;
                     }
 
                     @Override
-                    public void onNext(@NonNull Sheet sheet) {
-                        getMvpView().showSheet(sheet);
+                    public void onNext(@NonNull List<Sheet> sheets) {
+                        getMvpView().showSheets(sheets);
                     }
 
                     @Override
@@ -96,7 +89,7 @@ class SheetPresenter extends BasePresenter<SheetMvpView> {
 
                     @Override
                     public void onComplete() {
-                        getMvpView().showCompleteLoadingSheet();
+                        /**/
                     }
                 });
     }
