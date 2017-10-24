@@ -1,7 +1,6 @@
 package com.tcorner.msheet.ui.sheet;
 
 import com.tcorner.msheet.data.DataManager;
-import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.ui.base.BasePresenter;
 import com.tcorner.msheet.util.RxUtil;
@@ -64,11 +63,11 @@ class SheetPresenter extends BasePresenter<SheetMvpView> {
                 });
     }
 
-    void getGroupSheets(Group group) {
+    void getGroupSheets(String groupUuid) {
         checkViewAttached();
         RxUtil.dispose(disposable);
 
-        dataManager.getGroupSheets(group)
+        dataManager.getGroupSheets(groupUuid)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<List<Sheet>>() {

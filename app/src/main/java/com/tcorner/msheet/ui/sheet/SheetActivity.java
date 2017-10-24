@@ -300,6 +300,6 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
                 swipeSheets.setRefreshing(true);
             }
         });
-        sheetPresenter.getGroupSheets(selectedGroup);
+        sheetPresenter.getGroupSheets(selectedGroup.uuid());
     }
 }

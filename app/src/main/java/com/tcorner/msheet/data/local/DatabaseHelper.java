@@ -55,10 +55,10 @@ public class DatabaseHelper {
                 });
     }
 
-    public Observable<List<Sheet>> getGroupSheets(Group group) {
+    public Observable<List<Sheet>> getGroupSheets(String groupUuid) {
         return mDb.createQuery(Db.SheetTable.TABLE_NAME,
                 "SELECT * FROM " + Db.SheetTable.TABLE_NAME + " WHERE " + Db.SheetTable.COLUMN_GROUP_UUID + "=?",
-                group.uuid())
+                groupUuid)
                 .mapToList(new Function<Cursor, Sheet>() {
                     @Override
                     public Sheet apply(@NonNull Cursor cursor) throws Exception {
