@@ -19,7 +19,6 @@ public class ImageUtil {
         Glide.with(context)
                 .asBitmap()
                 .apply(new RequestOptions()
-                        .centerCrop()
                         .placeholder(R.drawable.default_image_loading))
                 .transition(new BitmapTransitionOptions()
                         .crossFade())

@@ -38,6 +38,7 @@ dependencies {
     final RXJAVA_VERSION = '2.1.5'
     final RXANDROID_VERSION = '2.0.1'
     final LEAKCANARY_VERSION = '1.5.2'
+    final PHOTOVIEW_VERSION = '2.1.3'
 
     compile 'me.gujun.android.taggroup:library:1.4@aar'
 
@@ -84,4 +85,6 @@ dependencies {
     provided "com.jakewharton.auto.value:auto-value-annotations:$AUTO_VALUE_VERSION"
     annotationProcessor "com.google.auto.value:auto-value:$AUTO_VALUE_VERSION"
     annotationProcessor 'com.ryanharter.auto.value:auto-value-parcel:0.2.4-rc2'
+
+    compile "com.github.chrisbanes:PhotoView:$PHOTOVIEW_VERSION"
 }

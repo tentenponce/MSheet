@@ -1,5 +1,6 @@
 package com.tcorner.msheet.data.model;
 
+import android.os.Parcelable;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
@@ -23,7 +24,7 @@ import butterknife.ButterKnife;
  */
 
 @AutoValue
-public abstract class Sheet extends AbstractItem<Sheet, Sheet.ViewHolder> {
+public abstract class Sheet extends AbstractItem<Sheet, Sheet.ViewHolder> implements Parcelable {
 
     public static Sheet create(String uuid, String imagePath, String groupUuid, Date dateModified) {
         return new AutoValue_Sheet(uuid, imagePath, groupUuid, dateModified);

@@ -17,6 +17,8 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
@@ -27,6 +29,7 @@ import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.ui.base.BaseActivity;
+import com.tcorner.msheet.ui.play.PlayActivity;
 import com.tcorner.msheet.util.FileUtil;
 import com.tcorner.msheet.util.IntentUtil;
 import com.tcorner.msheet.util.RxUtil;
@@ -35,6 +38,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -137,9 +141,24 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
         if (item.getItemId() == android.R.id.home) {
             onBackPressed();
             return true;
+        } else if (item.getItemId() == R.id.menu_play) {
+            ArrayList<Sheet> sheets = (ArrayList<Sheet>) fastItemAdapter.getAdapterItems();
+
+            Intent intent = new Intent(this, PlayActivity.class);
+            intent.putExtra(IntentUtil.PLAY_SHEETS, sheets);
+            startActivity(intent);
+
+            return true;
         } else {
             return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.menu_sheet, menu);
+        return true;
     }
 
     @Override
