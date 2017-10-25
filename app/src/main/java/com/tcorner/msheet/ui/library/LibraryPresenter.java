@@ -5,9 +5,11 @@ import android.support.v4.util.Pair;
 import com.tcorner.msheet.data.DataManager;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.GroupTag;
+import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.ui.base.BasePresenter;
 import com.tcorner.msheet.util.RxUtil;
 
+import java.io.File;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -19,6 +21,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Consumer;
 import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
@@ -101,21 +104,49 @@ public class LibraryPresenter extends BasePresenter<LibraryMvpView> {
                 });
     }
 
-    void deleteGroup(String uuid) {
+    void deleteGroup(final String uuid) {
         checkViewAttached();
         RxUtil.dispose(disposable);
 
-        dataManager.deleteGroup(uuid)
+        Observable.zip(dataManager.getGroupSheets(uuid),
+                dataManager.deleteGroup(uuid),
+                new BiFunction<List<Sheet>, Group, List<Sheet>>() {
+                    @Override
+                    public List<Sheet> apply(@NonNull List<Sheet> sheets, @NonNull Group group) throws Exception {
+                        return sheets;
+                    }
+                })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<Group>() {
+                .flatMapIterable(new Function<List<Sheet>, List<Sheet>>() {
+                    @Override
+                    public List<Sheet> apply(@NonNull List<Sheet> listObservable) throws Exception {
+                        return listObservable;
+                    }
+                })
+                .doOnNext(new Consumer<Sheet>() {
+                    @Override
+                    public void accept(Sheet sheet) throws Exception {
+                        File file = new File(sheet.imagePath());
+                        file.delete();
+                    }
+                })
+                .flatMap(new Function<Sheet, ObservableSource<Sheet>>() {
+                    @Override
+                    public ObservableSource<Sheet> apply(@NonNull Sheet sheet) throws Exception {
+                        return dataManager.deleteSheet(sheet.uuid())
+                                .subscribeOn(Schedulers.io())
+                                .observeOn(AndroidSchedulers.mainThread());
+                    }
+                })
+                .subscribe(new Observer<Sheet>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
                         disposable = d;
                     }
 
                     @Override
-                    public void onNext(@NonNull Group group) {
+                    public void onNext(@NonNull Sheet sheet) {
                         /**/
                     }
 

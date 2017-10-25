@@ -33,10 +33,13 @@ class SheetPresenter extends BasePresenter<SheetMvpView> {
     @Override
     public void detachView() {
         super.detachView();
-        if (disposable != null) disposable.dispose();
+        RxUtil.dispose(disposable);
     }
 
     void addSheet(Sheet sheet) {
+        checkViewAttached();
+        RxUtil.dispose(disposable);
+
         dataManager.addSheet(sheet)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())

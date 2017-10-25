@@ -8,6 +8,7 @@ import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.GroupTag;
 import com.tcorner.msheet.data.model.Sheet;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -116,6 +117,8 @@ public class DatabaseHelper {
                         Db.GroupTable.COLUMN_UUID + "=?",
                         uuid);
 
+                ArrayList<GroupTag> groupTags = new ArrayList<>();
+                e.onNext(Group.create("", groupTags)); //TODO cause null does not accept... any solution for this? :(
                 e.onComplete();
             }
         });
