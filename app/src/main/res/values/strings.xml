@@ -12,4 +12,6 @@
     <string name="dialog_delete_group_message">Are you sure you want to remove this beautiful piece?</string>
     <string name="dialog_delete_group_ok">OK</string>
     <string name="play_sheet">Play!</string>
+    <string name="saving_image">Saving Image...</string>
+    <string name="rotating_image">Rotating Image...</string>
 </resources>

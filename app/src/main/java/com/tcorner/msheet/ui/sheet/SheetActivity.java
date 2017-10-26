@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -13,10 +15,12 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
+import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -24,6 +28,8 @@ import android.view.View;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
+import com.mikepenz.fastadapter.FastAdapter;
+import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
@@ -31,6 +37,7 @@ import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.ui.base.BaseActivity;
 import com.tcorner.msheet.ui.play.PlayActivity;
 import com.tcorner.msheet.util.FileUtil;
+import com.tcorner.msheet.util.ImageUtil;
 import com.tcorner.msheet.util.IntentUtil;
 import com.tcorner.msheet.util.RxUtil;
 
@@ -54,6 +61,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.BiFunction;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -205,6 +213,51 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
         rvSheets.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
         rvSheets.setAdapter(fastItemAdapter);
 
+        fastItemAdapter.withOnClickListener(new FastAdapter.OnClickListener<Sheet>() {
+            @Override
+            public boolean onClick(View v, IAdapter<Sheet> adapter, Sheet item, int position) {
+                rotateImage(item.imagePath())
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(Schedulers.io())
+                        .flatMap(new Function<String, Observable<Void>>() {
+                            @Override
+                            public Observable<Void> apply(@NonNull String s) throws Exception {
+                                return ImageUtil.clearGlideCache(SheetActivity.this);
+                            }
+                        })
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .flatMap(new Function<Void, Observable<Void>>() {
+                            @Override
+                            public Observable<Void> apply(@NonNull Void aVoid) throws Exception {
+                                return ImageUtil.clearGlideMemory(SheetActivity.this);
+                            }
+                        })
+                        .subscribe(new Observer<Void>() {
+                            @Override
+                            public void onSubscribe(@NonNull Disposable d) {
+                                disposable = d;
+                            }
+
+                            @Override
+                            public void onNext(@NonNull Void aVoid) {
+                                /**/
+                            }
+
+                            @Override
+                            public void onError(@NonNull Throwable e) {
+                                Log.e("androidruntime", e.getMessage());
+                                showError();
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                getGroupSheets();
+                            }
+                        });
+                return true;
+            }
+        });
+
         /* init swipe refresh */
         swipeSheets.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -259,6 +312,7 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
     }
 
     private Observable<String> saveToInternalStorage(final Uri uri) {
+        Snackbar.make(coorSheet, R.string.saving_image, Snackbar.LENGTH_LONG).show();
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         File directory = cw.getDir("msheet", Context.MODE_PRIVATE); //image directory
 
@@ -288,6 +342,8 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
             @Override
             public String apply(@NonNull FileOutputStream fileOutputStream, @NonNull Bitmap bitmap) throws Exception {
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                fileOutputStream.flush();
+                fileOutputStream.close();
                 return mypath.getAbsolutePath();
             }
         });
@@ -301,5 +357,41 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
             }
         });
         sheetPresenter.getGroupSheets(selectedGroup.uuid());
+    }
+
+    private Observable<String> rotateImage(final String imagePath) {
+        Snackbar.make(coorSheet, R.string.rotating_image, Snackbar.LENGTH_LONG).show();
+        final File file = new File(imagePath);
+
+        RxUtil.dispose(disposable);
+        return Observable.zip(Observable.create(new ObservableOnSubscribe<Bitmap>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Bitmap> e) throws IOException {
+                if (!e.isDisposed()) {
+                    e.onNext(BitmapFactory.decodeFile(imagePath));
+                    e.onComplete();
+                }
+            }
+        }), Observable.create(new ObservableOnSubscribe<FileOutputStream>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<FileOutputStream> e) throws FileNotFoundException {
+                if (!e.isDisposed()) {
+                    e.onNext(new FileOutputStream(file));
+                    e.onComplete();
+                }
+            }
+        }), new BiFunction<Bitmap, FileOutputStream, String>() {
+            @Override
+            public String apply(@NonNull Bitmap bitmap, @NonNull FileOutputStream fileOutputStream) throws Exception {
+                Matrix matrix = new Matrix();
+                matrix.postRotate(90);
+                bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
+                fileOutputStream.flush();
+                fileOutputStream.close();
+
+                return file.getAbsolutePath();
+            }
+        });
     }
 }
