@@ -73,10 +73,16 @@ public abstract class Sheet extends AbstractItem<Sheet, Sheet.ViewHolder> implem
         holder.ivSheet.setImageDrawable(null);
     }
 
-    class ViewHolder extends RecyclerView.ViewHolder {
+    public class ViewHolder extends RecyclerView.ViewHolder {
 
         @BindView(R.id.iv_sheet)
-        AppCompatImageView ivSheet;
+        public AppCompatImageView ivSheet;
+
+        @BindView(R.id.iv_undo)
+        public AppCompatImageView ivUndo;
+
+        @BindView(R.id.iv_redo)
+        public AppCompatImageView ivRedo;
 
         ViewHolder(View itemView) {
             super(itemView);

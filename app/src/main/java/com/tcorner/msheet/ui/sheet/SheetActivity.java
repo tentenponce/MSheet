@@ -2,6 +2,7 @@ package com.tcorner.msheet.ui.sheet;
 
 import android.Manifest;
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -16,12 +17,10 @@ import android.provider.MediaStore;
 import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -30,15 +29,14 @@ import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
 import com.mikepenz.fastadapter.FastAdapter;
-import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
+import com.mikepenz.fastadapter.listeners.ClickEventHook;
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.ui.base.BaseActivity;
 import com.tcorner.msheet.ui.play.PlayActivity;
 import com.tcorner.msheet.util.FileUtil;
-import com.tcorner.msheet.util.ImageUtil;
 import com.tcorner.msheet.util.IntentUtil;
 import com.tcorner.msheet.util.RxUtil;
 
@@ -62,7 +60,6 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.BiFunction;
-import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -97,6 +94,8 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
     Group selectedGroup;
 
     private Disposable disposable;
+
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -135,6 +134,9 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
 
     @Override
     public void showAddSheet(Sheet sheet) {
+        if (progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
         getGroupSheets();
     }
 
@@ -233,48 +235,98 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
 
         rvSheets.setAdapter(fastItemAdapter);
 
-        fastItemAdapter.withOnClickListener(new FastAdapter.OnClickListener<Sheet>() {
+        fastItemAdapter.withEventHook(new ClickEventHook<Sheet>() {
+
+            @Nullable
             @Override
-            public boolean onClick(View v, IAdapter<Sheet> adapter, Sheet item, int position) {
-                rotateImage(item.imagePath())
+            public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+                //return the views on which you want to bind this event
+                if (viewHolder instanceof Sheet.ViewHolder) {
+                    return ((Sheet.ViewHolder) viewHolder).ivRedo;
+                }
+
+                return null;
+            }
+
+            @Override
+            public void onClick(View v, int position, FastAdapter<Sheet> fastAdapter, Sheet item) {
+                progressDialog.setMessage(getString(R.string.rotating_image));
+
+                if (!progressDialog.isShowing()) {
+                    progressDialog.show();
+                }
+                rotateImage(item.imagePath(), 90)
                         .subscribeOn(Schedulers.io())
-                        .observeOn(Schedulers.io())
-                        .flatMap(new Function<String, Observable<Void>>() {
-                            @Override
-                            public Observable<Void> apply(@NonNull String s) throws Exception {
-                                return ImageUtil.clearGlideCache(SheetActivity.this);
-                            }
-                        })
                         .observeOn(AndroidSchedulers.mainThread())
-                        .flatMap(new Function<Void, Observable<Void>>() {
-                            @Override
-                            public Observable<Void> apply(@NonNull Void aVoid) throws Exception {
-                                return ImageUtil.clearGlideMemory(SheetActivity.this);
-                            }
-                        })
-                        .subscribe(new Observer<Void>() {
+                        .subscribe(new Observer<String>() {
                             @Override
                             public void onSubscribe(@NonNull Disposable d) {
                                 disposable = d;
                             }
 
                             @Override
-                            public void onNext(@NonNull Void aVoid) {
+                            public void onNext(@NonNull String s) {
                                 /**/
                             }
 
                             @Override
                             public void onError(@NonNull Throwable e) {
-                                Log.e("androidruntime", e.getMessage());
                                 showError();
                             }
 
                             @Override
                             public void onComplete() {
+                                if (progressDialog.isShowing()) {
+                                    progressDialog.dismiss();
+                                }
                                 getGroupSheets();
                             }
                         });
-                return true;
+            }
+        }).withEventHook(new ClickEventHook<Sheet>() {
+
+            @Nullable
+            @Override
+            public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+                //return the views on which you want to bind this event
+                if (viewHolder instanceof Sheet.ViewHolder) {
+                    return ((Sheet.ViewHolder) viewHolder).ivUndo;
+                }
+
+                return null;
+            }
+
+            @Override
+            public void onClick(View v, int position, FastAdapter<Sheet> fastAdapter, Sheet item) {
+                progressDialog.setMessage(getString(R.string.rotating_image));
+                progressDialog.show();
+                rotateImage(item.imagePath(), -90)
+                        .subscribeOn(Schedulers.io())
+                        .observeOn(AndroidSchedulers.mainThread())
+                        .subscribe(new Observer<String>() {
+                            @Override
+                            public void onSubscribe(@NonNull Disposable d) {
+                                disposable = d;
+                            }
+
+                            @Override
+                            public void onNext(@NonNull String s) {
+                                /**/
+                            }
+
+                            @Override
+                            public void onError(@NonNull Throwable e) {
+                                showError();
+                            }
+
+                            @Override
+                            public void onComplete() {
+                                if (progressDialog.isShowing()) {
+                                    progressDialog.dismiss();
+                                }
+                                getGroupSheets();
+                            }
+                        });
             }
         });
 
@@ -285,9 +337,18 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
                 getGroupSheets();
             }
         });
+
+        /* init dialogs */
+        progressDialog = new ProgressDialog(this);
+        progressDialog.setCancelable(false);
     }
 
     private void onChooseFile(Uri selectedFileUri) {
+        progressDialog.setMessage(getString(R.string.saving_image));
+        if (!progressDialog.isShowing()) {
+            progressDialog.show();
+        }
+
         saveToInternalStorage(selectedFileUri)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -332,7 +393,6 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
     }
 
     private Observable<String> saveToInternalStorage(final Uri uri) {
-        Snackbar.make(coorSheet, R.string.saving_image, Snackbar.LENGTH_LONG).show();
         ContextWrapper cw = new ContextWrapper(getApplicationContext());
         File directory = cw.getDir("msheet", Context.MODE_PRIVATE); //image directory
 
@@ -379,8 +439,7 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
         sheetPresenter.getGroupSheets(selectedGroup.uuid());
     }
 
-    private Observable<String> rotateImage(final String imagePath) {
-        Snackbar.make(coorSheet, R.string.rotating_image, Snackbar.LENGTH_LONG).show();
+    private Observable<String> rotateImage(final String imagePath, final int rotation) {
         final File file = new File(imagePath);
 
         RxUtil.dispose(disposable);
@@ -404,7 +463,7 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
             @Override
             public String apply(@NonNull Bitmap bitmap, @NonNull FileOutputStream fileOutputStream) throws Exception {
                 Matrix matrix = new Matrix();
-                matrix.postRotate(90);
+                matrix.postRotate(rotation);
                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
                 bitmap.compress(Bitmap.CompressFormat.PNG, 100, fileOutputStream);
                 fileOutputStream.flush();
