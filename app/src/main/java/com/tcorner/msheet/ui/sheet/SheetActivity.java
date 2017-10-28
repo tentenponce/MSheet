@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,7 +18,7 @@ import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -210,7 +211,26 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
         /* init recyclerview */
         fastItemAdapter = new FastItemAdapter<>();
 
-        rvSheets.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+        final int gridSpacing = getResources().getDimensionPixelSize(R.dimen.s_margin);
+
+        rvSheets.setLayoutManager(new GridLayoutManager(this, 2));
+        rvSheets.addItemDecoration(new RecyclerView.ItemDecoration() {
+            @Override
+            public void getItemOffsets(Rect outRect, View view,
+                                       RecyclerView parent, RecyclerView.State state) {
+                outRect.left = gridSpacing;
+                outRect.right = gridSpacing;
+                outRect.bottom = gridSpacing;
+
+                // Add top margin only for the first item to avoid double space between items
+                if (parent.getChildLayoutPosition(view) == 0 || parent.getChildLayoutPosition(view) == 1) {
+                    outRect.top = gridSpacing;
+                } else {
+                    outRect.top = 0;
+                }
+            }
+        });
+
         rvSheets.setAdapter(fastItemAdapter);
 
         fastItemAdapter.withOnClickListener(new FastAdapter.OnClickListener<Sheet>() {
