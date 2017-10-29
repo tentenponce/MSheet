@@ -66,6 +66,36 @@ class SheetPresenter extends BasePresenter<SheetMvpView> {
                 });
     }
 
+    void deleteSheet(String uuid) {
+        checkViewAttached();
+        RxUtil.dispose(disposable);
+
+        dataManager.deleteSheet(uuid)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Sheet>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onNext(@NonNull Sheet sheet) {
+                        /**/
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        getMvpView().showError();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        getMvpView().showDeleteSheet();
+                    }
+                });
+    }
+
     void getGroupSheets(String groupUuid) {
         checkViewAttached();
         RxUtil.dispose(disposable);

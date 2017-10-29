@@ -14,4 +14,8 @@
     <string name="play_sheet">Play!</string>
     <string name="saving_image">Saving Image...</string>
     <string name="rotating_image">Rotating Image...</string>
+    <string name="removing_image">Removing Image...</string>
+    <string name="dialog_title_delete_sheet">Delete Sheet</string>
+    <string name="dialog_message_delete_sheet">Are you sure you want to remove this sheet?</string>
+    <string name="dialog_ok">Ok</string>
 </resources>

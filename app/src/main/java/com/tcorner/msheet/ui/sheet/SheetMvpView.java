@@ -15,4 +15,6 @@ interface SheetMvpView extends MvpView {
     void showSheets(List<Sheet> sheets);
 
     void showAddSheet(Sheet sheet);
+
+    void showDeleteSheet();
 }

@@ -31,6 +31,15 @@
             android:padding="@dimen/s_margin"
             android:src="@drawable/ic_redo_black_24dp" />
 
+        <android.support.v7.widget.AppCompatImageView
+            android:id="@+id/iv_remove"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentTop="true"
+            android:padding="@dimen/s_margin"
+            android:src="@drawable/ic_clear_black_24dp" />
+
     </RelativeLayout>
 
 </android.support.v7.widget.CardView>

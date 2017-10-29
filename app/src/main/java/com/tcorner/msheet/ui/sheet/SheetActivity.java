@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -18,6 +19,7 @@ import android.support.annotation.Nullable;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -97,6 +99,10 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
 
     private ProgressDialog progressDialog;
 
+    private AlertDialog confirmDialog;
+
+    private Sheet selectedSheet;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -134,6 +140,14 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
 
     @Override
     public void showAddSheet(Sheet sheet) {
+        if (progressDialog.isShowing()) {
+            progressDialog.dismiss();
+        }
+        getGroupSheets();
+    }
+
+    @Override
+    public void showDeleteSheet() {
         if (progressDialog.isShowing()) {
             progressDialog.dismiss();
         }
@@ -328,6 +342,23 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
                             }
                         });
             }
+        }).withEventHook(new ClickEventHook<Sheet>() {
+
+            @Nullable
+            @Override
+            public View onBind(@android.support.annotation.NonNull RecyclerView.ViewHolder viewHolder) {
+                if (viewHolder instanceof Sheet.ViewHolder) {
+                    return ((Sheet.ViewHolder) viewHolder).ivRemove;
+                }
+
+                return null;
+            }
+
+            @Override
+            public void onClick(View v, int position, FastAdapter<Sheet> fastAdapter, Sheet item) {
+                selectedSheet = item;
+                confirmDialog.show();
+            }
         });
 
         /* init swipe refresh */
@@ -341,6 +372,20 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
         /* init dialogs */
         progressDialog = new ProgressDialog(this);
         progressDialog.setCancelable(false);
+
+        confirmDialog = new AlertDialog.Builder(this)
+                .setTitle(R.string.dialog_title_delete_sheet)
+                .setMessage(R.string.dialog_message_delete_sheet)
+                .setPositiveButton(R.string.dialog_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        progressDialog.setMessage(getString(R.string.removing_image));
+                        progressDialog.show();
+
+                        sheetPresenter.deleteSheet(selectedSheet.uuid());
+                    }
+                })
+                .create();
     }
 
     private void onChooseFile(Uri selectedFileUri) {

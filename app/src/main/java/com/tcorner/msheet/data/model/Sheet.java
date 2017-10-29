@@ -84,6 +84,9 @@ public abstract class Sheet extends AbstractItem<Sheet, Sheet.ViewHolder> implem
         @BindView(R.id.iv_redo)
         public AppCompatImageView ivRedo;
 
+        @BindView(R.id.iv_remove)
+        public AppCompatImageView ivRemove;
+
         ViewHolder(View itemView) {
             super(itemView);
             ButterKnife.bind(this, itemView);
