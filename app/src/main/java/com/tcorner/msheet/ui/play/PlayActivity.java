@@ -3,6 +3,7 @@ package com.tcorner.msheet.ui.play;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
+import android.view.WindowManager;
 
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Sheet;
@@ -35,6 +36,9 @@ public class PlayActivity extends BaseActivity {
 
         initViews();
         initSheets();
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
+                WindowManager.LayoutParams.FLAG_FULLSCREEN);
     }
 
     private void initViews() {
