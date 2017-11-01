@@ -110,6 +110,7 @@ class Db {
         static final String TABLE_NAME = "sheetTable";
 
         static final String COLUMN_UUID = "uuid";
+        static final String COLUMN_SHEET_ORDER = "sheetOrder";
         static final String COLUMN_IMAGE = "image";
         static final String COLUMN_GROUP_UUID = "groupUuid";
         static final String COLUMN_DATE_MODIFIED = "dateModified";
@@ -117,6 +118,7 @@ class Db {
         static final String CREATE =
                 "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
                         COLUMN_UUID + " TEXT PRIMARY KEY, " +
+                        COLUMN_SHEET_ORDER + " INTEGER NOT NULL, " +
                         COLUMN_IMAGE + " TEXT NOT NULL, " +
                         COLUMN_GROUP_UUID + " TEXT NOT NULL, " +
                         COLUMN_DATE_MODIFIED + " DATETIME" +
@@ -128,6 +130,7 @@ class Db {
         static ContentValues toContentValues(Sheet sheet) {
             ContentValues values = new ContentValues();
             values.put(COLUMN_UUID, sheet.uuid());
+            values.put(COLUMN_SHEET_ORDER, sheet.sheetOrder());
             values.put(COLUMN_IMAGE, sheet.imagePath());
             values.put(COLUMN_GROUP_UUID, sheet.groupUuid());
             values.put(COLUMN_DATE_MODIFIED, DateUtil.formatDate(sheet.dateModified(),
@@ -140,12 +143,14 @@ class Db {
             try {
                 return Sheet.create(
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SHEET_ORDER)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGE)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GROUP_UUID)),
                         DateUtil.parseDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE_MODIFIED))));
             } catch (ParseException e) {
                 return Sheet.create(
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
+                        cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_SHEET_ORDER)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_IMAGE)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GROUP_UUID)),
                         null);

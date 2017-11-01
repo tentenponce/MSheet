@@ -70,4 +70,8 @@ public class DataManager {
     public Observable<List<GroupTag>> getGroupTags() {
         return databaseHelper.getGroupTags();
     }
+
+    public Observable<Integer> getLastSheetCount() {
+        return databaseHelper.getLastSheetCount();
+    }
 }

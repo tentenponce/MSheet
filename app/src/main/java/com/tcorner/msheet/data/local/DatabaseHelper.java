@@ -185,4 +185,16 @@ public class DatabaseHelper {
                     }
                 });
     }
+
+    public Observable<Integer> getLastSheetCount() {
+        return mDb.createQuery(Db.SheetTable.TABLE_NAME,
+                "SELECT MAX(" + Db.SheetTable.COLUMN_SHEET_ORDER + ") AS " + Db.SheetTable.COLUMN_SHEET_ORDER
+                        + " FROM " + Db.SheetTable.TABLE_NAME)
+                .mapToOne(new Function<Cursor, Integer>() {
+                    @Override
+                    public Integer apply(@NonNull Cursor cursor) throws Exception {
+                        return cursor.getInt(cursor.getColumnIndexOrThrow(Db.SheetTable.COLUMN_SHEET_ORDER));
+                    }
+                });
+    }
 }

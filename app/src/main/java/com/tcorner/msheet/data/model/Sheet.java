@@ -26,19 +26,21 @@ import butterknife.ButterKnife;
 @AutoValue
 public abstract class Sheet extends AbstractItem<Sheet, Sheet.ViewHolder> implements Parcelable {
 
-    public static Sheet create(String uuid, String imagePath, String groupUuid, Date dateModified) {
-        return new AutoValue_Sheet(uuid, imagePath, groupUuid, dateModified);
+    public static Sheet create(String uuid, int sheetOrder, String imagePath, String groupUuid, Date dateModified) {
+        return new AutoValue_Sheet(uuid, sheetOrder, imagePath, groupUuid, dateModified);
     }
 
-    public static Sheet create(String imagePath, String groupUuid) {
-        return create(UUID.randomUUID().toString(), imagePath, groupUuid, Calendar.getInstance().getTime());
+    public static Sheet create(int sheetOrder, String imagePath, String groupUuid) {
+        return create(UUID.randomUUID().toString(), sheetOrder, imagePath, groupUuid, Calendar.getInstance().getTime());
     }
 
     public static Sheet create(Sheet sheet) {
-        return create(sheet.uuid(), sheet.imagePath(), sheet.groupUuid(), sheet.dateModified());
+        return create(sheet.uuid(), sheet.sheetOrder(), sheet.imagePath(), sheet.groupUuid(), sheet.dateModified());
     }
 
     public abstract String uuid();
+
+    public abstract int sheetOrder();
 
     public abstract String imagePath();
 
@@ -75,17 +77,14 @@ public abstract class Sheet extends AbstractItem<Sheet, Sheet.ViewHolder> implem
 
     public class ViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.iv_sheet)
-        public AppCompatImageView ivSheet;
-
         @BindView(R.id.iv_undo)
         public AppCompatImageView ivUndo;
-
         @BindView(R.id.iv_redo)
         public AppCompatImageView ivRedo;
-
         @BindView(R.id.iv_remove)
         public AppCompatImageView ivRemove;
+        @BindView(R.id.iv_sheet)
+        AppCompatImageView ivSheet;
 
         ViewHolder(View itemView) {
             super(itemView);

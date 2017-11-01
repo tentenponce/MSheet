@@ -253,7 +253,7 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
 
             @Nullable
             @Override
-            public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+            public View onBind(@android.support.annotation.NonNull @NonNull RecyclerView.ViewHolder viewHolder) {
                 //return the views on which you want to bind this event
                 if (viewHolder instanceof Sheet.ViewHolder) {
                     return ((Sheet.ViewHolder) viewHolder).ivRedo;
@@ -301,7 +301,7 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
 
             @Nullable
             @Override
-            public View onBind(@NonNull RecyclerView.ViewHolder viewHolder) {
+            public View onBind(@android.support.annotation.NonNull @NonNull RecyclerView.ViewHolder viewHolder) {
                 //return the views on which you want to bind this event
                 if (viewHolder instanceof Sheet.ViewHolder) {
                     return ((Sheet.ViewHolder) viewHolder).ivUndo;
@@ -406,7 +406,7 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
                     @Override
                     public void onNext(@NonNull String s) {
                         if (selectedGroup != null) {
-                            sheetPresenter.addSheet(Sheet.create(s, selectedGroup.uuid()));
+                            sheetPresenter.addSheet(s, selectedGroup.uuid());
                         }
                     }
 

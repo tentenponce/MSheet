@@ -1,18 +1,24 @@
 package com.tcorner.msheet.ui.sheet;
 
+import android.util.Log;
+
 import com.tcorner.msheet.data.DataManager;
 import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.ui.base.BasePresenter;
 import com.tcorner.msheet.util.RxUtil;
 
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import javax.inject.Inject;
 
+import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Function;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -36,13 +42,19 @@ class SheetPresenter extends BasePresenter<SheetMvpView> {
         RxUtil.dispose(disposable);
     }
 
-    void addSheet(Sheet sheet) {
+    void addSheet(final String imagePath, final String groupUuid) {
         checkViewAttached();
         RxUtil.dispose(disposable);
 
-        dataManager.addSheet(sheet)
+        dataManager.getLastSheetCount()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .flatMap(new Function<Integer, Observable<Sheet>>() {
+                    @Override
+                    public Observable<Sheet> apply(@NonNull Integer integer) throws Exception {
+                        return dataManager.addSheet(Sheet.create(integer + 1, imagePath, groupUuid));
+                    }
+                })
                 .subscribe(new Observer<Sheet>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
@@ -56,6 +68,7 @@ class SheetPresenter extends BasePresenter<SheetMvpView> {
 
                     @Override
                     public void onError(@NonNull Throwable e) {
+                        Log.e("androidruntime", e.getMessage());
                         getMvpView().showError();
                     }
 
@@ -103,6 +116,19 @@ class SheetPresenter extends BasePresenter<SheetMvpView> {
         dataManager.getGroupSheets(groupUuid)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .map(new Function<List<Sheet>, List<Sheet>>() {
+                    @Override
+                    public List<Sheet> apply(@NonNull List<Sheet> sheets) throws Exception {
+                        Collections.sort(sheets, new Comparator<Sheet>() {
+                            @Override
+                            public int compare(Sheet sheet, Sheet sheet2) {
+                                return Integer.valueOf(sheet.sheetOrder()).compareTo(sheet2.sheetOrder());
+                            }
+                        });
+
+                        return sheets;
+                    }
+                })
                 .subscribe(new Observer<List<Sheet>>() {
                     @Override
                     public void onSubscribe(@NonNull Disposable d) {
