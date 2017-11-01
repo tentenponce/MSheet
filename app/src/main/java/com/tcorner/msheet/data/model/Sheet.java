@@ -6,6 +6,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
 import com.google.auto.value.AutoValue;
+import com.mikepenz.fastadapter.IDraggable;
+import com.mikepenz.fastadapter.IItem;
 import com.mikepenz.fastadapter.items.AbstractItem;
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.util.ImageUtil;
@@ -24,7 +26,9 @@ import butterknife.ButterKnife;
  */
 
 @AutoValue
-public abstract class Sheet extends AbstractItem<Sheet, Sheet.ViewHolder> implements Parcelable {
+public abstract class Sheet extends AbstractItem<Sheet, Sheet.ViewHolder> implements Parcelable, IDraggable<Sheet, IItem> {
+
+    private boolean mIsDraggable = true;
 
     public static Sheet create(String uuid, int sheetOrder, String imagePath, String groupUuid, Date dateModified) {
         return new AutoValue_Sheet(uuid, sheetOrder, imagePath, groupUuid, dateModified);
@@ -36,6 +40,17 @@ public abstract class Sheet extends AbstractItem<Sheet, Sheet.ViewHolder> implem
 
     public static Sheet create(Sheet sheet) {
         return create(sheet.uuid(), sheet.sheetOrder(), sheet.imagePath(), sheet.groupUuid(), sheet.dateModified());
+    }
+
+    @Override
+    public boolean isDraggable() {
+        return mIsDraggable;
+    }
+
+    @Override
+    public Sheet withIsDraggable(boolean draggable) {
+        this.mIsDraggable = draggable;
+        return this;
     }
 
     public abstract String uuid();

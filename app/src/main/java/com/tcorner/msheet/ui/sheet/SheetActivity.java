@@ -23,6 +23,7 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -33,6 +34,9 @@ import android.widget.Toast;
 import com.mikepenz.fastadapter.FastAdapter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.mikepenz.fastadapter.listeners.ClickEventHook;
+import com.mikepenz.fastadapter_extensions.drag.ItemTouchCallback;
+import com.mikepenz.fastadapter_extensions.drag.SimpleDragCallback;
+import com.mikepenz.fastadapter_extensions.utilities.DragDropUtil;
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.Sheet;
@@ -47,6 +51,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
 
@@ -69,7 +74,7 @@ import io.reactivex.schedulers.Schedulers;
  * Created by Tenten Ponce on 10/20/2017.
  */
 
-public class SheetActivity extends BaseActivity implements SheetMvpView, View.OnClickListener {
+public class SheetActivity extends BaseActivity implements ItemTouchCallback, SheetMvpView, View.OnClickListener {
 
     private static final int REQUEST_GALLERY = 1;
 
@@ -94,13 +99,11 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
     FastItemAdapter<Sheet> fastItemAdapter;
 
     Group selectedGroup;
-
+    int gridSpacing;
+    RecyclerView.ItemDecoration itemDecoration;
     private Disposable disposable;
-
     private ProgressDialog progressDialog;
-
     private AlertDialog confirmDialog;
-
     private Sheet selectedSheet;
 
     @Override
@@ -152,6 +155,17 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
             progressDialog.dismiss();
         }
         getGroupSheets();
+    }
+
+    @Override
+    public void showUpdateSheet(Sheet sheet) {
+        if (fastItemAdapter.getAdapterItems().size() > 0) { //refresh index 0 to relayout item decoration
+            fastItemAdapter.notifyAdapterItemChanged(0);
+        }
+
+        if (fastItemAdapter.getAdapterItems().size() > 1) { //refresh index 1 to relayout item decoration
+            fastItemAdapter.notifyAdapterItemChanged(1);
+        }
     }
 
     @Override
@@ -227,10 +241,8 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
         /* init recyclerview */
         fastItemAdapter = new FastItemAdapter<>();
 
-        final int gridSpacing = getResources().getDimensionPixelSize(R.dimen.s_margin);
-
-        rvSheets.setLayoutManager(new GridLayoutManager(this, 2));
-        rvSheets.addItemDecoration(new RecyclerView.ItemDecoration() {
+        gridSpacing = getResources().getDimensionPixelSize(R.dimen.s_margin);
+        itemDecoration = new RecyclerView.ItemDecoration() {
             @Override
             public void getItemOffsets(Rect outRect, View view,
                                        RecyclerView parent, RecyclerView.State state) {
@@ -245,7 +257,10 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
                     outRect.top = 0;
                 }
             }
-        });
+        };
+
+        rvSheets.setLayoutManager(new GridLayoutManager(this, 2));
+        rvSheets.addItemDecoration(itemDecoration);
 
         rvSheets.setAdapter(fastItemAdapter);
 
@@ -360,6 +375,11 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
                 confirmDialog.show();
             }
         });
+
+        //add drag and drop for item
+        SimpleDragCallback touchCallback = new SimpleDragCallback(SimpleDragCallback.ALL, this);
+        ItemTouchHelper touchHelper = new ItemTouchHelper(touchCallback);
+        touchHelper.attachToRecyclerView(rvSheets); // Attach ItemTouchHelper to RecyclerView
 
         /* init swipe refresh */
         swipeSheets.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -517,5 +537,23 @@ public class SheetActivity extends BaseActivity implements SheetMvpView, View.On
                 return file.getAbsolutePath();
             }
         });
+    }
+
+    @Override
+    public boolean itemTouchOnMove(int oldPosition, int newPosition) {
+        DragDropUtil.onMove(fastItemAdapter, oldPosition, newPosition);  // change position
+        return true;
+    }
+
+    @Override
+    public void itemTouchDropped(int oldPosition, int newPosition) {
+        List<Sheet> newOrderSheet = new ArrayList<>();
+
+        for (Sheet sheet : fastItemAdapter.getAdapterItems()) {
+            newOrderSheet.add(Sheet.create(sheet.uuid(), fastItemAdapter.getAdapterPosition(sheet),
+                    sheet.imagePath(), sheet.groupUuid(), Calendar.getInstance().getTime()));
+        }
+
+        sheetPresenter.swapSheet(newOrderSheet);
     }
 }

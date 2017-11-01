@@ -43,6 +43,14 @@ public class DataManager {
         return databaseHelper.getGroupSheets(groupUuid);
     }
 
+    public Observable<Integer> getLastSheetCount() {
+        return databaseHelper.getLastSheetCount();
+    }
+
+    public Observable<Sheet> updateSheet(Sheet sheet) {
+        return databaseHelper.updateSheet(sheet);
+    }
+
     public Observable<Group> addGroup(Group group) {
         return databaseHelper.addGroup(group);
     }
@@ -69,9 +77,5 @@ public class DataManager {
 
     public Observable<List<GroupTag>> getGroupTags() {
         return databaseHelper.getGroupTags();
-    }
-
-    public Observable<Integer> getLastSheetCount() {
-        return databaseHelper.getLastSheetCount();
     }
 }

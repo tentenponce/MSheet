@@ -83,6 +83,30 @@ public class DatabaseHelper {
         });
     }
 
+    public Observable<Integer> getLastSheetCount() {
+        return mDb.createQuery(Db.SheetTable.TABLE_NAME,
+                "SELECT MAX(" + Db.SheetTable.COLUMN_SHEET_ORDER + ") AS " + Db.SheetTable.COLUMN_SHEET_ORDER
+                        + " FROM " + Db.SheetTable.TABLE_NAME)
+                .mapToOne(new Function<Cursor, Integer>() {
+                    @Override
+                    public Integer apply(@NonNull Cursor cursor) throws Exception {
+                        return cursor.getInt(cursor.getColumnIndexOrThrow(Db.SheetTable.COLUMN_SHEET_ORDER));
+                    }
+                });
+    }
+
+    public Observable<Sheet> updateSheet(final Sheet sheet) {
+        return Observable.create(new ObservableOnSubscribe<Sheet>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Sheet> e) throws Exception {
+                mDb.update(Db.SheetTable.TABLE_NAME, Db.SheetTable.toContentValues(sheet),
+                        Db.SheetTable.COLUMN_UUID + "=?", sheet.uuid());
+                e.onNext(sheet);
+                e.onComplete();
+            }
+        });
+    }
+
     /* Group Database */
     public Observable<Group> addGroup(final Group group) {
         return Observable.create(new ObservableOnSubscribe<Group>() {
@@ -182,18 +206,6 @@ public class DatabaseHelper {
                     @Override
                     public GroupTag apply(@NonNull Cursor cursor) throws Exception {
                         return GroupTag.create(Db.GroupTagTable.parseCursor(cursor));
-                    }
-                });
-    }
-
-    public Observable<Integer> getLastSheetCount() {
-        return mDb.createQuery(Db.SheetTable.TABLE_NAME,
-                "SELECT MAX(" + Db.SheetTable.COLUMN_SHEET_ORDER + ") AS " + Db.SheetTable.COLUMN_SHEET_ORDER
-                        + " FROM " + Db.SheetTable.TABLE_NAME)
-                .mapToOne(new Function<Cursor, Integer>() {
-                    @Override
-                    public Integer apply(@NonNull Cursor cursor) throws Exception {
-                        return cursor.getInt(cursor.getColumnIndexOrThrow(Db.SheetTable.COLUMN_SHEET_ORDER));
                     }
                 });
     }

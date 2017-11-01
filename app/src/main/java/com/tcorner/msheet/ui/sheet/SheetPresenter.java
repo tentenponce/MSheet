@@ -151,4 +151,76 @@ class SheetPresenter extends BasePresenter<SheetMvpView> {
                     }
                 });
     }
+
+    void swapSheet(Sheet sheet1, final Sheet sheet2) {
+        checkViewAttached();
+        RxUtil.dispose(disposable);
+
+        dataManager.updateSheet(sheet1)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMap(new Function<Sheet, Observable<Sheet>>() {
+                    @Override
+                    public Observable<Sheet> apply(@NonNull Sheet sheet) throws Exception {
+                        return dataManager.updateSheet(sheet2);
+                    }
+                })
+                .subscribe(new Observer<Sheet>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onNext(@NonNull Sheet sheet) {
+                        getMvpView().showUpdateSheet(sheet);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        getMvpView().showError();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        /**/
+                    }
+                });
+    }
+
+    void swapSheet(List<Sheet> sheets) {
+        checkViewAttached();
+        RxUtil.dispose(disposable);
+
+        Observable.fromIterable(sheets)
+                .flatMap(new Function<Sheet, Observable<Sheet>>() {
+                    @Override
+                    public Observable<Sheet> apply(@NonNull Sheet sheet) throws Exception {
+                        return dataManager.updateSheet(sheet);
+                    }
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<Sheet>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onNext(@NonNull Sheet sheet) {
+                        getMvpView().showUpdateSheet(sheet);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        getMvpView().showError();
+                    }
+
+                    @Override
+                    public void onComplete() {
+                        /**/
+                    }
+                });
+    }
 }
