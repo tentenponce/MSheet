@@ -22,6 +22,9 @@ import com.tcorner.msheet.ui.library.addgroup.AddGroupActivity;
 import com.tcorner.msheet.ui.sheet.SheetActivity;
 import com.tcorner.msheet.util.IntentUtil;
 
+import java.util.Collections;
+import java.util.Comparator;
+
 import javax.inject.Inject;
 
 import butterknife.BindView;
@@ -89,6 +92,12 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     @Override
     public void showGroup(final Group group) {
         fastItemAdapter.add(group);
+        Collections.sort(fastItemAdapter.getAdapterItems(), new Comparator<Group>() {
+            @Override
+            public int compare(Group group, Group t1) {
+                return group.name().compareToIgnoreCase(t1.name());
+            }
+        });
         fastItemAdapter.notifyDataSetChanged();
     }
 
