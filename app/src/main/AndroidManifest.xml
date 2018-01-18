@@ -20,7 +20,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <activity android:name=".ui.library.addgroup.AddGroupActivity"/>
+        <activity android:name=".ui.library.modifygroup.ModifyGroupActivity"/>
         <activity android:name=".ui.sheet.SheetActivity"/>
         <activity android:name=".ui.play.PlayActivity"/>
     </application>

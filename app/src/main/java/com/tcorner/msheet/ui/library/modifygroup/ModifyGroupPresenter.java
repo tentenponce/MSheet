@@ -1,4 +1,4 @@
-package com.tcorner.msheet.ui.library.addgroup;
+package com.tcorner.msheet.ui.library.modifygroup;
 
 import com.tcorner.msheet.data.DataManager;
 import com.tcorner.msheet.data.model.Group;
@@ -23,13 +23,13 @@ import io.reactivex.schedulers.Schedulers;
  * Created by Tenten Ponce on 10/8/2017.
  */
 
-class AddGroupPresenter extends BasePresenter<AddGroupMvpView> {
+class ModifyGroupPresenter extends BasePresenter<ModifyGroupMvpView> {
 
     private final DataManager dataManager;
     private Disposable disposable;
 
     @Inject
-    AddGroupPresenter(DataManager dataManager) {
+    ModifyGroupPresenter(DataManager dataManager) {
         this.dataManager = dataManager;
     }
 
@@ -71,6 +71,47 @@ class AddGroupPresenter extends BasePresenter<AddGroupMvpView> {
                     @Override
                     public void onComplete() {
                         /**/
+                    }
+                });
+    }
+
+    void updateGroup(final Group group) {
+        checkViewAttached();
+        RxUtil.dispose(disposable);
+
+        dataManager.updateGroup(group)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMap(new Function<Group, ObservableSource<List<GroupTag>>>() { //delete the group tags
+                    @Override
+                    public ObservableSource<List<GroupTag>> apply(Group group) throws Exception {
+                        return dataManager.deleteGroupTagByGroup(group.uuid());
+                    }
+                })
+                .flatMap(new Function<List<GroupTag>, ObservableSource<List<GroupTag>>>() { //add the new group tags
+                    @Override
+                    public ObservableSource<List<GroupTag>> apply(@NonNull List<GroupTag> groupTags) throws Exception {
+                        return dataManager.addGroupTags(group.tags());
+                    }
+                })
+                .subscribe(new Observer<List<GroupTag>>() {
+                    @Override
+                    public void onSubscribe(@NonNull Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onNext(@NonNull List<GroupTag> groupTags) {
+                        getMvpView().showAddGroup(group);
+                    }
+
+                    @Override
+                    public void onError(@NonNull Throwable e) {
+                        getMvpView().showError();
+                    }
+
+                    @Override
+                    public void onComplete() {
                     }
                 });
     }

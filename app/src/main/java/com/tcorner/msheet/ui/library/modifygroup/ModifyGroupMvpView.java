@@ -1,4 +1,4 @@
-package com.tcorner.msheet.ui.library.addgroup;
+package com.tcorner.msheet.ui.library.modifygroup;
 
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.ui.base.MvpView;
@@ -8,7 +8,9 @@ import com.tcorner.msheet.ui.base.MvpView;
  * Created by Tenten Ponce on 10/8/2017.
  */
 
-public interface AddGroupMvpView extends MvpView {
+public interface ModifyGroupMvpView extends MvpView {
 
     void showAddGroup(Group group);
+
+    void showUpdateGroup(Group group);
 }

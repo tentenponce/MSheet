@@ -32,6 +32,10 @@ public abstract class Group extends AbstractItem<Group, Group.ViewHolder> implem
         return new AutoValue_Group(uuid, name, dateModified, tags);
     }
 
+    public static Group create(String uuid, String name, List<GroupTag> tags) {
+        return create(uuid, name, Calendar.getInstance().getTime(), tags);
+    }
+
     public static Group create(String name, List<GroupTag> tags) {
         return create(UUID.randomUUID().toString(), name, Calendar.getInstance().getTime(), tags);
     }

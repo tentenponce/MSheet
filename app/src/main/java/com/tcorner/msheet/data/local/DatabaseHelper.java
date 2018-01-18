@@ -120,6 +120,18 @@ public class DatabaseHelper {
         });
     }
 
+    public Observable<Group> updateGroup(final Group group) {
+        return Observable.create(new ObservableOnSubscribe<Group>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Group> e) throws Exception {
+                mDb.update(Db.GroupTable.TABLE_NAME, Db.GroupTable.toContentValues(group),
+                        Db.GroupTable.COLUMN_UUID + "=?", group.uuid());
+                e.onNext(group);
+                e.onComplete();
+            }
+        });
+    }
+
     public Observable<List<Group>> getGroups() {
         return mDb.createQuery(Db.GroupTable.TABLE_NAME,
                 "SELECT * FROM " + Db.GroupTable.TABLE_NAME)
@@ -182,6 +194,22 @@ public class DatabaseHelper {
                         Db.GroupTagTable.COLUMN_UUID + "=?",
                         uuid);
 
+                e.onComplete();
+            }
+        });
+    }
+
+    public Observable<List<GroupTag>> deleteGroupTagByGroup(final String groupUuid) {
+        return Observable.create(new ObservableOnSubscribe<List<GroupTag>>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<List<GroupTag>> e) {
+                if (e.isDisposed()) return;
+
+                mDb.delete(Db.GroupTagTable.TABLE_NAME,
+                        Db.GroupTagTable.COLUMN_GROUP_UUID + "=?",
+                        groupUuid);
+
+                e.onNext(new ArrayList<GroupTag>());
                 e.onComplete();
             }
         });

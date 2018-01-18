@@ -18,7 +18,7 @@ import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.ui.base.BaseActivity;
-import com.tcorner.msheet.ui.library.addgroup.AddGroupActivity;
+import com.tcorner.msheet.ui.library.modifygroup.ModifyGroupActivity;
 import com.tcorner.msheet.ui.sheet.SheetActivity;
 import com.tcorner.msheet.util.IntentUtil;
 
@@ -37,6 +37,10 @@ import butterknife.ButterKnife;
 
 public class LibraryActivity extends BaseActivity implements LibraryMvpView, View.OnClickListener {
 
+    private static final String[] ACTION = {"Update", "Delete"};
+    private static final int UPDATE_ID = 0;
+    private static final int DELETE_ID = 1;
+
     @BindView(R.id.toolbar)
     Toolbar toolbar;
 
@@ -52,7 +56,8 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     FastItemAdapter<Group> fastItemAdapter;
 
     private AlertDialog deleteGroupDialog;
-    private Group deleteGroup;
+    private AlertDialog actionDialog;
+    private Group selectedGroup;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -104,7 +109,8 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.fab_add_sheet) {
-            Intent intent = new Intent(this, AddGroupActivity.class);
+            Intent intent = new Intent(this, ModifyGroupActivity.class);
+            intent.putExtra(IntentUtil.MODIFY_GROUP_ACTION, IntentUtil.ADD_ACTION);
             startActivity(intent);
         }
     }
@@ -128,8 +134,8 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
         fastItemAdapter.withOnLongClickListener(new FastAdapter.OnLongClickListener<Group>() {
             @Override
             public boolean onLongClick(View v, IAdapter<Group> adapter, Group item, int position) {
-                deleteGroup = item;
-                deleteGroupDialog.show();
+                selectedGroup = item;
+                actionDialog.show();
                 return true;
             }
         });
@@ -151,8 +157,25 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
                 .setPositiveButton(R.string.dialog_delete_group_ok, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialogInterface, int i) {
-                        if (deleteGroup != null) {
-                            libraryPresenter.deleteGroup(deleteGroup.uuid());
+                        if (selectedGroup != null) {
+                            libraryPresenter.deleteGroup(selectedGroup.uuid());
+                        }
+                    }
+                }).create();
+
+        actionDialog = new AlertDialog.Builder(this)
+                .setItems(ACTION, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+
+                        if (i == UPDATE_ID) {
+                            Intent intent = new Intent(LibraryActivity.this, ModifyGroupActivity.class);
+                            intent.putExtra(IntentUtil.MODIFY_GROUP_ACTION, IntentUtil.UPDATE_ACTION);
+                            intent.putExtra(IntentUtil.UPDATE_GROUP, selectedGroup);
+                            startActivity(intent);
+                        } else {
+                            deleteGroupDialog.show();
                         }
                     }
                 }).create();

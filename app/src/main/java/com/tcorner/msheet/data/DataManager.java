@@ -55,6 +55,10 @@ public class DataManager {
         return databaseHelper.addGroup(group);
     }
 
+    public Observable<Group> updateGroup(Group group) {
+        return databaseHelper.updateGroup(group);
+    }
+
     public Observable<Group> deleteGroup(String uuid) {
         return databaseHelper.deleteGroup(uuid);
     }
@@ -69,6 +73,10 @@ public class DataManager {
 
     public Observable<GroupTag> deleteGroupTag(String uuid) {
         return databaseHelper.deleteGroupTag(uuid);
+    }
+
+    public Observable<List<GroupTag>> deleteGroupTagByGroup(String groupUuid) {
+        return databaseHelper.deleteGroupTagByGroup(groupUuid);
     }
 
     public Observable<List<GroupTag>> getGroupTagsByGroup(String groupUuid) {
