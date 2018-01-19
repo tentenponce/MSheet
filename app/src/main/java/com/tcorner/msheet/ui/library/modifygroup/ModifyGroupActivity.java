@@ -73,7 +73,15 @@ public class ModifyGroupActivity extends BaseActivity implements ModifyGroupMvpV
 
         initViews();
         initModifyData();
-        modifyGroupPresenter.getDistinctGroupTags();
+
+        String[] currentGroupTags;
+        if (selectedGroup == null) {
+            currentGroupTags = new String[0];
+        } else {
+            currentGroupTags = MapperUtil.mapTagsToString(selectedGroup.tags()).toArray(new String[0]);
+        }
+
+        modifyGroupPresenter.getSuggestedTags(currentGroupTags);
     }
 
     @Override
@@ -201,18 +209,46 @@ public class ModifyGroupActivity extends BaseActivity implements ModifyGroupMvpV
                 newTags.add(tag);
 
                 tagGroup.setTags(newTags);
+
+                //remove the tag added to the group from the suggested tags
+                List<String> suggestedTags = new ArrayList<>();
+
+                suggestedTags.addAll(Arrays.asList(tagGroupSuggested.getTags()));
+                suggestedTags.remove(tag);
+
+                tagGroupSuggested.setTags(suggestedTags);
+
+                modifyGroupPresenter.getSuggestedTags(tagGroup.getTags());
             }
         });
 
         tagGroup.setOnTagChangeListener(new TagGroup.OnTagChangeListener() {
             @Override
-            public void onAppend(TagGroup tagGroup, String tag) {
+            public void onAppend(TagGroup ignored, String tag) {
+                ArrayList<String> lastCurrentTags = new ArrayList<>();
 
+                lastCurrentTags.addAll(Arrays.asList(tagGroup.getTags()));
+                lastCurrentTags.remove(lastCurrentTags.size() - 1); //dont count the inserted because it will be validated
+
+                boolean isExisted = false;
+                for (String lastCurrentTag : lastCurrentTags) {
+                    if (lastCurrentTag.equalsIgnoreCase(tag)) { //compare the added tag if existed
+                        isExisted = true;
+                        break;
+                    }
+                }
+
+                if (isExisted) {
+                    tagGroup.setTags(lastCurrentTags);
+                    Snackbar.make(coorAddGroup, R.string.error_duplicate_tag, Snackbar.LENGTH_LONG).show();
+                } else {
+                    modifyGroupPresenter.getSuggestedTags(tagGroup.getTags());
+                }
             }
 
             @Override
             public void onDelete(TagGroup tagGroup, String tag) {
-
+                modifyGroupPresenter.getSuggestedTags(tagGroup.getTags());
             }
         });
 

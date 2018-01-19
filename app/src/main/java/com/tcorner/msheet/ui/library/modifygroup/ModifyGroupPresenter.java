@@ -10,12 +10,15 @@ import java.util.List;
 
 import javax.inject.Inject;
 
+import io.reactivex.Flowable;
 import io.reactivex.ObservableSource;
 import io.reactivex.Observer;
+import io.reactivex.SingleSource;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.annotations.NonNull;
 import io.reactivex.disposables.Disposable;
 import io.reactivex.functions.Function;
+import io.reactivex.functions.Predicate;
 import io.reactivex.schedulers.Schedulers;
 
 /**
@@ -116,22 +119,38 @@ class ModifyGroupPresenter extends BasePresenter<ModifyGroupMvpView> {
                 });
     }
 
-    void getDistinctGroupTags() {
+    /**
+     * Returns top 5 of the most used tags
+     *
+     * @param groupTagsToRemove tags to be removed from the list
+     */
+    void getSuggestedTags(final String[] groupTagsToRemove) {
         checkViewAttached();
         RxUtil.dispose(disposable);
 
         dataManager.getDistinctGroupTags()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .flatMapIterable(new Function<List<GroupTag>, Iterable<GroupTag>>() {
+                .flatMapSingle(new Function<List<GroupTag>, SingleSource<List<GroupTag>>>() {
                     @Override
-                    public Iterable<GroupTag> apply(List<GroupTag> groupTags) throws Exception {
-                        return groupTags;
+                    public SingleSource<List<GroupTag>> apply(List<GroupTag> groupTags) throws Exception {
+                        return Flowable.fromIterable(groupTags)
+                                .filter(new Predicate<GroupTag>() {
+                                    @Override
+                                    public boolean test(GroupTag groupTag) throws Exception {
+                                        for (String tag : groupTagsToRemove) {
+                                            if (groupTag.tag().equalsIgnoreCase(tag)) {
+                                                return false;
+                                            }
+                                        }
+
+                                        return true;
+                                    }
+                                })
+                                .take(5)
+                                .toList();
                     }
                 })
-                .take(5)
-                .toList()
-                .toObservable()
                 .subscribe(new Observer<List<GroupTag>>() {
                     @Override
                     public void onSubscribe(Disposable d) {
@@ -150,7 +169,6 @@ class ModifyGroupPresenter extends BasePresenter<ModifyGroupMvpView> {
 
                     @Override
                     public void onComplete() {
-
                     }
                 });
     }
