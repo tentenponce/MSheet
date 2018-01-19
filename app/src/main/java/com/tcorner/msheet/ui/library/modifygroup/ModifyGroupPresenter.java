@@ -102,7 +102,7 @@ class ModifyGroupPresenter extends BasePresenter<ModifyGroupMvpView> {
 
                     @Override
                     public void onNext(@NonNull List<GroupTag> groupTags) {
-                        getMvpView().showAddGroup(group);
+                        getMvpView().showUpdateGroup(group);
                     }
 
                     @Override
@@ -112,6 +112,45 @@ class ModifyGroupPresenter extends BasePresenter<ModifyGroupMvpView> {
 
                     @Override
                     public void onComplete() {
+                    }
+                });
+    }
+
+    void getDistinctGroupTags() {
+        checkViewAttached();
+        RxUtil.dispose(disposable);
+
+        dataManager.getDistinctGroupTags()
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .flatMapIterable(new Function<List<GroupTag>, Iterable<GroupTag>>() {
+                    @Override
+                    public Iterable<GroupTag> apply(List<GroupTag> groupTags) throws Exception {
+                        return groupTags;
+                    }
+                })
+                .take(5)
+                .toList()
+                .toObservable()
+                .subscribe(new Observer<List<GroupTag>>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+                        disposable = d;
+                    }
+
+                    @Override
+                    public void onNext(List<GroupTag> groupTags) {
+                        getMvpView().showUniqueGroupTags(groupTags);
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        getMvpView().showError();
+                    }
+
+                    @Override
+                    public void onComplete() {
+
                     }
                 });
     }

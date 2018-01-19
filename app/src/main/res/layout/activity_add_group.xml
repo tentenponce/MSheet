@@ -54,6 +54,25 @@
             app:atg_isAppendMode="true"
             app:atg_textColor="@color/colorPrimaryDark"/>
 
+        <android.support.v7.widget.AppCompatTextView
+            android:id="@+id/tv_tag_suggested"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/tag_group"
+            android:layout_marginTop="@dimen/xl_margin"
+            android:drawableLeft="@drawable/ic_bookmark_grey_500_18dp"
+            android:text="@string/suggested_tags"/>
+
+        <me.gujun.android.taggroup.TagGroup
+            android:id="@+id/tag_group_suggested"
+            style="@style/TagGroup.Large"
+            android:layout_below="@+id/tv_tag_suggested"
+            android:layout_marginTop="@dimen/s_margin"
+            app:atg_borderColor="@color/colorPrimaryDark"
+            app:atg_checkedBackgroundColor="@color/colorPrimaryDark"
+            app:atg_checkedBorderColor="@color/colorPrimaryDark"
+            app:atg_textColor="@color/colorPrimaryDark"/>
+
     </RelativeLayout>
 
     <android.support.design.widget.FloatingActionButton

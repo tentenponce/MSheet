@@ -16,16 +16,16 @@ import java.util.UUID;
 @AutoValue
 public abstract class GroupTag implements Parcelable {
 
-    public static GroupTag create(String uuid, String tag, String groupUuid, Date dateModified) {
-        return new AutoValue_GroupTag(uuid, tag, groupUuid, dateModified);
+    public static GroupTag create(String uuid, String tag, String groupUuid, Date dateModified, int count) {
+        return new AutoValue_GroupTag(uuid, tag, groupUuid, dateModified, count);
     }
 
     public static GroupTag create(String name, String groupUuid) {
-        return create(UUID.randomUUID().toString(), name, groupUuid, Calendar.getInstance().getTime());
+        return create(UUID.randomUUID().toString(), name, groupUuid, Calendar.getInstance().getTime(), 0);
     }
 
     public static GroupTag create(GroupTag groupTag) {
-        return create(groupTag.uuid(), groupTag.tag(), groupTag.groupUuid(), groupTag.dateModified());
+        return create(groupTag.uuid(), groupTag.tag(), groupTag.groupUuid(), groupTag.dateModified(), groupTag.count());
     }
 
     public abstract String uuid();
@@ -35,4 +35,6 @@ public abstract class GroupTag implements Parcelable {
     public abstract String groupUuid();
 
     public abstract Date dateModified();
+
+    public abstract int count();
 }

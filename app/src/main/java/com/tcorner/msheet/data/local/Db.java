@@ -10,6 +10,7 @@ import com.tcorner.msheet.util.DateUtil;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
 
 class Db {
 
@@ -23,6 +24,7 @@ class Db {
         static final String COLUMN_TAG = "tag";
         static final String COLUMN_GROUP_UUID = "group_uuid";
         static final String COLUMN_DATE_MODIFIED = "dateModified";
+        static final String COLUMN_COUNT = "tagCount";
 
         static final String CREATE =
                 "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
@@ -52,14 +54,23 @@ class Db {
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TAG)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GROUP_UUID)),
-                        DateUtil.parseDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE_MODIFIED))));
+                        DateUtil.parseDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE_MODIFIED))), 0);
             } catch (ParseException e) {
                 return GroupTag.create(
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TAG)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_GROUP_UUID)),
-                        null);
+                        null, 0);
             }
+        }
+
+        static GroupTag parseCursorDistinctGroupTag(Cursor cursor) {
+            return GroupTag.create(
+                    "",
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_TAG)),
+                    "",
+                    Calendar.getInstance().getTime(),
+                    cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_COUNT)));
         }
     }
 

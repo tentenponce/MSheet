@@ -86,4 +86,8 @@ public class DataManager {
     public Observable<List<GroupTag>> getGroupTags() {
         return databaseHelper.getGroupTags();
     }
+
+    public Observable<List<GroupTag>> getDistinctGroupTags() {
+        return databaseHelper.getDistinctGroupTags();
+    }
 }

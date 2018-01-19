@@ -237,4 +237,17 @@ public class DatabaseHelper {
                     }
                 });
     }
+
+    public Observable<List<GroupTag>> getDistinctGroupTags() {
+        return mDb.createQuery(Db.GroupTagTable.TABLE_NAME,
+                "SELECT " + Db.GroupTagTable.COLUMN_TAG + ", COUNT(" + Db.GroupTagTable.COLUMN_TAG + ") AS " + Db.GroupTagTable.COLUMN_COUNT
+                        + " FROM " + Db.GroupTagTable.TABLE_NAME
+                        + " GROUP BY " + Db.GroupTagTable.COLUMN_TAG + " ORDER BY COUNT(" + Db.GroupTagTable.COLUMN_TAG + ") DESC")
+                .mapToList(new Function<Cursor, GroupTag>() {
+                    @Override
+                    public GroupTag apply(@NonNull Cursor cursor) throws Exception {
+                        return GroupTag.create(Db.GroupTagTable.parseCursorDistinctGroupTag(cursor));
+                    }
+                });
+    }
 }

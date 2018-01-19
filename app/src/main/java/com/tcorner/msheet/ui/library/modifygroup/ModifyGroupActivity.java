@@ -49,6 +49,9 @@ public class ModifyGroupActivity extends BaseActivity implements ModifyGroupMvpV
     @BindView(R.id.tag_group)
     TagGroup tagGroup;
 
+    @BindView(R.id.tag_group_suggested)
+    TagGroup tagGroupSuggested;
+
     @BindView(R.id.fab_add_group)
     FloatingActionButton fabAddGroup;
 
@@ -70,6 +73,7 @@ public class ModifyGroupActivity extends BaseActivity implements ModifyGroupMvpV
 
         initViews();
         initModifyData();
+        modifyGroupPresenter.getDistinctGroupTags();
     }
 
     @Override
@@ -98,6 +102,11 @@ public class ModifyGroupActivity extends BaseActivity implements ModifyGroupMvpV
     }
 
     @Override
+    public void showUniqueGroupTags(List<GroupTag> groupTags) {
+        tagGroupSuggested.setTags(MapperUtil.mapTagsToString(groupTags));
+    }
+
+    @Override
     public void showError() {
         super.showError();
 
@@ -116,7 +125,16 @@ public class ModifyGroupActivity extends BaseActivity implements ModifyGroupMvpV
             } else {
                 List<GroupTag> groupTags = new ArrayList<>();
 
-                Group group = Group.create(selectedGroup.uuid(), pieceName, new ArrayList<GroupTag>()); //build here to get uuid
+                Group group = null;
+                if (action == IntentUtil.ADD_ACTION) {
+                    group = Group.create(pieceName, new ArrayList<GroupTag>()); //build here to get uuid
+                } else if (action == IntentUtil.UPDATE_ACTION) {
+                    group = Group.create(selectedGroup.uuid(), pieceName, new ArrayList<GroupTag>()); //build here to get uuid
+                } else {
+                    Toast.makeText(this, R.string.error_generic, Toast.LENGTH_SHORT).show();
+                    finish();
+                }
+
                 for (String tag : Arrays.asList(tagGroup.getTags())) {
                     groupTags.add(GroupTag.create(tag, group.uuid()));
                 }
@@ -174,6 +192,29 @@ public class ModifyGroupActivity extends BaseActivity implements ModifyGroupMvpV
 
         /* init listeners */
         fabAddGroup.setOnClickListener(this);
+        tagGroupSuggested.setOnTagClickListener(new TagGroup.OnTagClickListener() {
+            @Override
+            public void onTagClick(String tag) {
+                ArrayList<String> newTags = new ArrayList<>();
+
+                newTags.addAll(Arrays.asList(tagGroup.getTags()));
+                newTags.add(tag);
+
+                tagGroup.setTags(newTags);
+            }
+        });
+
+        tagGroup.setOnTagChangeListener(new TagGroup.OnTagChangeListener() {
+            @Override
+            public void onAppend(TagGroup tagGroup, String tag) {
+
+            }
+
+            @Override
+            public void onDelete(TagGroup tagGroup, String tag) {
+
+            }
+        });
 
         /* init dialogs */
         loadingDialog = DialogFactory.createProgressDialog(this, R.string.loading);
