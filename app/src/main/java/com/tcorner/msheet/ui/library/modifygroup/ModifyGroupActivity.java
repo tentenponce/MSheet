@@ -8,6 +8,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -239,7 +240,7 @@ public class ModifyGroupActivity extends BaseActivity implements ModifyGroupMvpV
                 }
 
                 if (isExisted) {
-                    tagGroup.removeViewAt(tagGroup.getChildCount() - 2);
+                    tagGroup.removeViewAt(tagGroup.getChildCount() - 1); //remove last tag
                     Snackbar.make(coorAddGroup, R.string.error_duplicate_tag, Snackbar.LENGTH_LONG).show();
                 } else {
                     modifyGroupPresenter.getSuggestedTags(tagGroup.getTags());
