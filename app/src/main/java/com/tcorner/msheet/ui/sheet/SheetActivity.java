@@ -29,6 +29,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.webkit.MimeTypeMap;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.mikepenz.fastadapter.FastAdapter;
@@ -93,6 +94,9 @@ public class SheetActivity extends BaseActivity implements ItemTouchCallback, Sh
     @BindView(R.id.swipe_sheets)
     SwipeRefreshLayout swipeSheets;
 
+    @BindView(R.id.lin_empty)
+    LinearLayout linEmpty;
+
     @Inject
     SheetPresenter sheetPresenter;
 
@@ -139,6 +143,14 @@ public class SheetActivity extends BaseActivity implements ItemTouchCallback, Sh
         fastItemAdapter.clear();
         fastItemAdapter.add(sheets);
         fastItemAdapter.notifyDataSetChanged();
+
+        if (sheets.isEmpty()) {
+            linEmpty.setVisibility(View.VISIBLE);
+            rvSheets.setVisibility(View.GONE);
+        } else {
+            linEmpty.setVisibility(View.GONE);
+            rvSheets.setVisibility(View.VISIBLE);
+        }
     }
 
     @Override

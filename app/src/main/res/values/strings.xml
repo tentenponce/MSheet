@@ -23,4 +23,6 @@
     <string name="loading">Loading</string>
     <string name="suggested_tags">Suggested Tags</string>
     <string name="error_duplicate_tag">Redundancy makes us crazy. You cannot add the same tag again.</string>
+    <string name="empty_default_message">It seems that we\'re empty here…</string>
+    <string name="success_delete_group">Group successfully deleted.</string>
 </resources>

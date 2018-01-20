@@ -15,4 +15,8 @@ public interface LibraryMvpView extends MvpView {
     void showDeleteGroup();
 
     void showGroup(Group group);
+
+    void showEmptyGroup();
+
+    void showGroupList();
 }

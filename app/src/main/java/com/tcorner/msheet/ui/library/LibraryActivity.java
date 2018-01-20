@@ -10,6 +10,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.mikepenz.fastadapter.FastAdapter;
@@ -39,7 +40,6 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
 
     private static final String[] ACTION = {"Update", "Delete"};
     private static final int UPDATE_ID = 0;
-    private static final int DELETE_ID = 1;
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -49,6 +49,9 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
 
     @BindView(R.id.rv_sheets)
     RecyclerView rvSheets;
+
+    @BindView(R.id.lin_empty)
+    LinearLayout linEmpty;
 
     @Inject
     LibraryPresenter libraryPresenter;
@@ -88,7 +91,7 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
 
     @Override
     public void showDeleteGroup() {
-        Toast.makeText(this, "Sheet successfully deleted.", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, R.string.success_delete_group, Toast.LENGTH_SHORT).show();
 
         fastItemAdapter.clear();
         libraryPresenter.getGroups();
@@ -104,6 +107,19 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
             }
         });
         fastItemAdapter.notifyDataSetChanged();
+    }
+
+    @Override
+    public void showEmptyGroup() {
+        rvSheets.setVisibility(View.GONE);
+        linEmpty.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void showGroupList() {
+
+        rvSheets.setVisibility(View.VISIBLE);
+        linEmpty.setVisibility(View.GONE);
     }
 
     @Override

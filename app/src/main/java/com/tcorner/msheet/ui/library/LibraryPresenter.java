@@ -53,6 +53,16 @@ public class LibraryPresenter extends BasePresenter<LibraryMvpView> {
         dataManager.getGroups()
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
+                .doOnNext(new Consumer<List<Group>>() {
+                    @Override
+                    public void accept(List<Group> groups) throws Exception {
+                        if (groups.isEmpty()) {
+                            getMvpView().showEmptyGroup();
+                        } else {
+                            getMvpView().showGroupList();
+                        }
+                    }
+                })
                 .flatMapIterable(new Function<List<Group>, Iterable<Group>>() {
                     @Override
                     public Iterable<Group> apply(@NonNull List<Group> groups) throws Exception {
