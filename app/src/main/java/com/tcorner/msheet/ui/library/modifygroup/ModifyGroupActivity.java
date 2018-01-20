@@ -239,7 +239,7 @@ public class ModifyGroupActivity extends BaseActivity implements ModifyGroupMvpV
                 }
 
                 if (isExisted) {
-                    tagGroup.setTags(lastCurrentTags);
+                    tagGroup.removeViewAt(tagGroup.getChildCount() - 2);
                     Snackbar.make(coorAddGroup, R.string.error_duplicate_tag, Snackbar.LENGTH_LONG).show();
                 } else {
                     modifyGroupPresenter.getSuggestedTags(tagGroup.getTags());
