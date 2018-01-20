@@ -65,7 +65,7 @@ public class ModifyGroupActivity extends BaseActivity implements ModifyGroupMvpV
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_add_group);
+        setContentView(R.layout.activity_modify_group);
         ButterKnife.bind(this);
 
         activityComponent().inject(this);
