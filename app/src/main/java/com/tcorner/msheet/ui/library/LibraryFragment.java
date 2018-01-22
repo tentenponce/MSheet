@@ -3,13 +3,13 @@ package com.tcorner.msheet.ui.library;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -19,6 +19,7 @@ import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.ui.base.BaseActivity;
+import com.tcorner.msheet.ui.base.BaseFragment;
 import com.tcorner.msheet.ui.library.modifygroup.ModifyGroupActivity;
 import com.tcorner.msheet.ui.sheet.SheetActivity;
 import com.tcorner.msheet.util.IntentUtil;
@@ -36,13 +37,10 @@ import butterknife.ButterKnife;
  * Created by Exequiel Egbert V. Ponce on 9/14/2017.
  */
 
-public class LibraryActivity extends BaseActivity implements LibraryMvpView, View.OnClickListener {
+public class LibraryFragment extends BaseFragment implements LibraryMvpView, View.OnClickListener {
 
     private static final String[] ACTION = {"Update", "Delete"};
     private static final int UPDATE_ID = 0;
-
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
 
     @BindView(R.id.fab_add_sheet)
     FloatingActionButton fabAddSheet;
@@ -63,19 +61,85 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     private Group selectedGroup;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_library);
-        ButterKnife.bind(this);
 
-        activityComponent().inject(this);
+        ((BaseActivity) getActivity()).activityComponent().inject(this);
         libraryPresenter.attachView(this);
-
-        initViews();
     }
 
     @Override
-    protected void onResume() {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View v = inflater.inflate(R.layout.fragment_library, container, false);
+        ButterKnife.bind(this, v);
+        setHasOptionsMenu(true);
+
+        return v;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        /* init click listeners */
+        fabAddSheet.setOnClickListener(this);
+
+        /* init recyclerview */
+        fastItemAdapter = new FastItemAdapter<>();
+
+        rvSheets.setLayoutManager(new LinearLayoutManager(getContext()));
+        rvSheets.setAdapter(fastItemAdapter);
+
+        fastItemAdapter.withOnLongClickListener(new FastAdapter.OnLongClickListener<Group>() {
+            @Override
+            public boolean onLongClick(View v, IAdapter<Group> adapter, Group item, int position) {
+                selectedGroup = item;
+                actionDialog.show();
+                return true;
+            }
+        });
+
+        fastItemAdapter.withOnClickListener(new FastAdapter.OnClickListener<Group>() {
+            @Override
+            public boolean onClick(View v, IAdapter<Group> adapter, Group item, int position) {
+                Intent intent = new Intent(getContext(), SheetActivity.class);
+                intent.putExtra(IntentUtil.SELECTED_GROUP, item);
+                startActivity(intent);
+                return true;
+            }
+        });
+
+        /* init dialogs */
+        deleteGroupDialog = new AlertDialog.Builder(getContext())
+                .setTitle(R.string.dialog_delete_group_title)
+                .setMessage(R.string.dialog_delete_group_message)
+                .setPositiveButton(R.string.dialog_delete_group_ok, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        if (selectedGroup != null) {
+                            libraryPresenter.deleteGroup(selectedGroup.uuid());
+                        }
+                    }
+                }).create();
+
+        actionDialog = new AlertDialog.Builder(getContext())
+                .setItems(ACTION, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        dialogInterface.dismiss();
+
+                        if (i == UPDATE_ID) {
+                            Intent intent = new Intent(getContext(), ModifyGroupActivity.class);
+                            intent.putExtra(IntentUtil.MODIFY_GROUP_ACTION, IntentUtil.UPDATE_ACTION);
+                            intent.putExtra(IntentUtil.UPDATE_GROUP, selectedGroup);
+                            startActivity(intent);
+                        } else {
+                            deleteGroupDialog.show();
+                        }
+                    }
+                }).create();
+    }
+
+    @Override
+    public void onResume() {
         super.onResume();
 
         fastItemAdapter.clear();
@@ -83,7 +147,7 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     }
 
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         super.onDestroy();
 
         libraryPresenter.detachView();
@@ -91,7 +155,7 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
 
     @Override
     public void showDeleteGroup() {
-        Toast.makeText(this, R.string.success_delete_group, Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), R.string.success_delete_group, Toast.LENGTH_SHORT).show();
 
         fastItemAdapter.clear();
         libraryPresenter.getGroups();
@@ -125,75 +189,9 @@ public class LibraryActivity extends BaseActivity implements LibraryMvpView, Vie
     @Override
     public void onClick(View view) {
         if (view.getId() == R.id.fab_add_sheet) {
-            Intent intent = new Intent(this, ModifyGroupActivity.class);
+            Intent intent = new Intent(getContext(), ModifyGroupActivity.class);
             intent.putExtra(IntentUtil.MODIFY_GROUP_ACTION, IntentUtil.ADD_ACTION);
             startActivity(intent);
         }
-    }
-
-    private void initViews() {
-        /* init toolbar */
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() != null) {
-            getSupportActionBar().setTitle(R.string.title_library);
-        }
-
-        /* init click listeners */
-        fabAddSheet.setOnClickListener(this);
-
-        /* init recyclerview */
-        fastItemAdapter = new FastItemAdapter<>();
-
-        rvSheets.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
-        rvSheets.setAdapter(fastItemAdapter);
-
-        fastItemAdapter.withOnLongClickListener(new FastAdapter.OnLongClickListener<Group>() {
-            @Override
-            public boolean onLongClick(View v, IAdapter<Group> adapter, Group item, int position) {
-                selectedGroup = item;
-                actionDialog.show();
-                return true;
-            }
-        });
-
-        fastItemAdapter.withOnClickListener(new FastAdapter.OnClickListener<Group>() {
-            @Override
-            public boolean onClick(View v, IAdapter<Group> adapter, Group item, int position) {
-                Intent intent = new Intent(LibraryActivity.this, SheetActivity.class);
-                intent.putExtra(IntentUtil.SELECTED_GROUP, item);
-                startActivity(intent);
-                return true;
-            }
-        });
-
-        /* init dialogs */
-        deleteGroupDialog = new AlertDialog.Builder(LibraryActivity.this)
-                .setTitle(R.string.dialog_delete_group_title)
-                .setMessage(R.string.dialog_delete_group_message)
-                .setPositiveButton(R.string.dialog_delete_group_ok, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        if (selectedGroup != null) {
-                            libraryPresenter.deleteGroup(selectedGroup.uuid());
-                        }
-                    }
-                }).create();
-
-        actionDialog = new AlertDialog.Builder(this)
-                .setItems(ACTION, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        dialogInterface.dismiss();
-
-                        if (i == UPDATE_ID) {
-                            Intent intent = new Intent(LibraryActivity.this, ModifyGroupActivity.class);
-                            intent.putExtra(IntentUtil.MODIFY_GROUP_ACTION, IntentUtil.UPDATE_ACTION);
-                            intent.putExtra(IntentUtil.UPDATE_GROUP, selectedGroup);
-                            startActivity(intent);
-                        } else {
-                            deleteGroupDialog.show();
-                        }
-                    }
-                }).create();
     }
 }

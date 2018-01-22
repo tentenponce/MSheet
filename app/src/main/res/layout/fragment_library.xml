@@ -1,22 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <include
-        android:id="@+id/toolbar"
-        layout="@layout/layout_toolbar" />
-
     <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginTop="?attr/actionBarSize">
+        android:layout_height="match_parent">
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/rv_sheets"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginTop="5dp"></android.support.v7.widget.RecyclerView>
+            android:layout_marginTop="5dp"/>
 
         <LinearLayout
             android:id="@+id/lin_empty"
@@ -30,14 +26,14 @@
             <android.support.v7.widget.AppCompatImageView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:src="@drawable/ic_folder_open_grey_500_48dp" />
+                android:src="@drawable/ic_folder_open_grey_500_48dp"/>
 
             <android.support.v7.widget.AppCompatTextView
                 android:id="@+id/tv_empty_message"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:gravity="center_horizontal"
-                android:text="@string/empty_default_message" />
+                android:text="@string/empty_default_message"/>
         </LinearLayout>
     </RelativeLayout>
 
@@ -47,6 +43,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
-        android:src="@drawable/ic_add_white_24dp" />
+        android:src="@drawable/ic_add_white_24dp"/>
 
 </android.support.design.widget.CoordinatorLayout>
