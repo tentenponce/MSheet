@@ -13,6 +13,7 @@ import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Sheet;
 import com.tcorner.msheet.ui.base.BaseActivity;
 import com.tcorner.msheet.util.IntentUtil;
+import com.tcorner.msheet.util.SessionUtil;
 
 import java.util.ArrayList;
 
@@ -51,13 +52,19 @@ public class PlayActivity extends BaseActivity implements SensorEventListener {
     @Override
     protected void onResume() {
         super.onResume();
-        mSensorManager.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL);
+
+        if (SessionUtil.readBoolean(this, SessionUtil.SENSOR_SETTINGS, true)) {
+            mSensorManager.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL);
+        }
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        mSensorManager.unregisterListener(this);
+
+        if (SessionUtil.readBoolean(this, SessionUtil.SENSOR_SETTINGS, true)) {
+            mSensorManager.unregisterListener(this);
+        }
     }
 
     @Override

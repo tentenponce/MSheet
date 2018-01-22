@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v4.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!--sensor settings-->
+            <RelativeLayout
+                android:id="@+id/rl_sensor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:padding="@dimen/m_padding">
+
+                <android.support.v7.widget.AppCompatTextView
+                    android:id="@+id/tv_sensor_title"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_toLeftOf="@+id/switch_sensor"
+                    android:text="@string/next_page_sensor"
+                    android:textColor="@android:color/black"
+                    android:textSize="@dimen/text_body"/>
+
+                <android.support.v7.widget.AppCompatTextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentLeft="true"
+                    android:layout_below="@+id/tv_sensor_title"
+                    android:layout_toLeftOf="@+id/switch_sensor"
+                    android:text="@string/sensor_settings_detail"
+                    android:textColor="@color/colorPrimaryDark"
+                    android:textSize="@dimen/text_small"/>
+
+                <android.support.v7.widget.SwitchCompat
+                    android:id="@+id/switch_sensor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentRight="true"
+                    android:layout_centerVertical="true"/>
+
+            </RelativeLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_below="@+id/rl_sensor"
+                android:background="@color/colorDivider"/>
+
+        </RelativeLayout>
+    </android.support.v4.widget.NestedScrollView>
+
+</android.support.design.widget.CoordinatorLayout>

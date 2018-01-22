@@ -32,4 +32,6 @@
 
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
+    <string name="next_page_sensor">Next Page Sensor</string>
+    <string name="sensor_settings_detail">Allows hovering on your proximity sensor to trigger next page when playing a sheet.</string>
 </resources>
