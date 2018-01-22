@@ -27,10 +27,13 @@ import butterknife.ButterKnife;
 public class PlayActivity extends BaseActivity implements SensorEventListener {
 
     private static final int SENSOR_SENSITIVITY = 4;
+
     @BindView(R.id.vp_sheets)
     SheetViewPager vpSheets;
+
     @BindView(R.id.tablayout_indicator)
     TabLayout tabLayoutIndicator;
+
     private SensorManager mSensorManager;
     private Sensor mProximity;
 
