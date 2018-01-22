@@ -1,5 +1,9 @@
 package com.tcorner.msheet.ui.play;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.TabLayout;
@@ -20,13 +24,15 @@ import butterknife.ButterKnife;
  * Created by Tenten Ponce on 10/24/2017.
  */
 
-public class PlayActivity extends BaseActivity {
+public class PlayActivity extends BaseActivity implements SensorEventListener {
 
+    private static final int SENSOR_SENSITIVITY = 4;
     @BindView(R.id.vp_sheets)
     SheetViewPager vpSheets;
-
     @BindView(R.id.tablayout_indicator)
     TabLayout tabLayoutIndicator;
+    private SensorManager mSensorManager;
+    private Sensor mProximity;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,8 +40,44 @@ public class PlayActivity extends BaseActivity {
         setContentView(R.layout.activity_play);
         ButterKnife.bind(this);
 
+        init();
         initViews();
         initSheets();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mSensorManager.registerListener(this, mProximity, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mSensorManager.unregisterListener(this);
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent sensorEvent) {
+        if (sensorEvent.sensor.getType() == Sensor.TYPE_PROXIMITY) {
+            if (sensorEvent.values[0] >= -SENSOR_SENSITIVITY && sensorEvent.values[0] <= SENSOR_SENSITIVITY) {
+                vpSheets.setCurrentItem(vpSheets.getCurrentItem() + 1, true);
+            }
+        }
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+    }
+
+    private void init() {
+        /* init proximity sensor */
+        mSensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        if (mSensorManager != null) {
+            mProximity = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+        }
+
+        /* go fullscreen */
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN,
                 WindowManager.LayoutParams.FLAG_FULLSCREEN);
