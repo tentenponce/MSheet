@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">MSheet</string>
+    <string name="company_name">TCorner</string>
+
     <string name="error_generic">it seems that we\'ve encountered a problem.</string>
     <string name="error_image_chooser">There\'s a problem with the image.</string>
     <string name="error_no_image">No selected image.</string>
@@ -34,4 +36,12 @@
     <string name="drawer_close">Close navigation drawer</string>
     <string name="next_page_sensor">Next Page Sensor</string>
     <string name="sensor_settings_detail">Allows hovering on your proximity sensor to trigger next page when playing a sheet.</string>
+    <string name="developer">Developer</string>
+    <string name="about_message"><![CDATA[
+    For pianists that suffer from <b>stuffed-crowded-folderization-syndrome</b> of music sheets (just kidding).
+    <br /><br />• Compiles and handle all of your beautiful piano piece to be play.
+    <br /><br />• Comes with collections that will arrange your piece in any order you want, helpful when you\'re playing non-stop in series/medley.
+    <br />• Flipping pages has never been easier! you don\'t even need to hold nor touch it, just hover your hands and voila! It will instantly turn to next page for you.
+    <br />• You can even play beside an electric fan without worrying your folder to be thrown to the other world.
+    <br />• More features to come!]]></string>
 </resources>
