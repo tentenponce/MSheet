@@ -4,6 +4,7 @@ import android.database.Cursor;
 
 import com.squareup.sqlbrite2.BriteDatabase;
 import com.squareup.sqlbrite2.SqlBrite;
+import com.tcorner.msheet.data.model.Collection;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.GroupTag;
 import com.tcorner.msheet.data.model.Sheet;
@@ -249,5 +250,58 @@ public class DatabaseHelper {
                         return GroupTag.create(Db.GroupTagTable.parseCursorDistinctGroupTag(cursor));
                     }
                 });
+    }
+
+    /* Collection Database */
+    public Observable<Collection> addCollection(final Collection collection) {
+        return Observable.create(new ObservableOnSubscribe<Collection>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Collection> e) {
+                if (e.isDisposed()) return;
+                mDb.insert(Db.CollectionTable.TABLE_NAME, Db.CollectionTable.toContentValues(collection));
+                e.onNext(collection);
+                e.onComplete();
+            }
+        });
+    }
+
+    public Observable<Collection> updateCollection(final Collection collection) {
+        return Observable.create(new ObservableOnSubscribe<Collection>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Collection> e) throws Exception {
+                mDb.update(Db.CollectionTable.TABLE_NAME, Db.CollectionTable.toContentValues(collection),
+                        Db.CollectionTable.COLUMN_UUID + "=?", collection.uuid());
+                e.onNext(collection);
+                e.onComplete();
+            }
+        });
+    }
+
+    public Observable<List<Collection>> getCollections() {
+        return mDb.createQuery(Db.CollectionTable.TABLE_NAME,
+                "SELECT * FROM " + Db.CollectionTable.TABLE_NAME)
+                .mapToList(new Function<Cursor, Collection>() {
+                    @Override
+                    public Collection apply(@NonNull Cursor cursor) throws Exception {
+                        return Collection.create(Db.CollectionTable.parseCursor(cursor));
+                    }
+                });
+    }
+
+    public Observable<Collection> deleteCollection(final String uuid) {
+        return Observable.create(new ObservableOnSubscribe<Collection>() {
+            @Override
+            public void subscribe(@NonNull ObservableEmitter<Collection> e) throws Exception {
+                if (e.isDisposed()) return;
+
+                mDb.delete(Db.CollectionTable.TABLE_NAME,
+                        Db.CollectionTable.COLUMN_UUID + "=?",
+                        uuid);
+
+                ArrayList<Group> groups = new ArrayList<>();
+                e.onNext(Collection.create("", groups)); //TODO cause null does not accept... any solution for this? :(
+                e.onComplete();
+            }
+        });
     }
 }

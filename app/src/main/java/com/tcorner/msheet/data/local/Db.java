@@ -3,6 +3,7 @@ package com.tcorner.msheet.data.local;
 import android.content.ContentValues;
 import android.database.Cursor;
 
+import com.tcorner.msheet.data.model.Collection;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.GroupTag;
 import com.tcorner.msheet.data.model.Sheet;
@@ -113,6 +114,49 @@ class Db {
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)),
                         null, new ArrayList<GroupTag>());
+            }
+        }
+    }
+
+    abstract static class CollectionTable {
+        static final String TABLE_NAME = "collectionTable";
+
+        static final String COLUMN_UUID = "uuid";
+        static final String COLUMN_NAME = "name";
+        static final String COLUMN_DATE_MODIFIED = "dateModified";
+
+        static final String CREATE =
+                "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
+                        COLUMN_UUID + " TEXT PRIMARY KEY, " +
+                        COLUMN_NAME + " TEXT NOT NULL, " +
+                        COLUMN_DATE_MODIFIED + " DATETIME" +
+                        ");";
+
+        private CollectionTable() {
+        }
+
+        static ContentValues toContentValues(Collection collection) {
+            ContentValues values = new ContentValues();
+            values.put(COLUMN_UUID, collection.uuid());
+            values.put(COLUMN_NAME, collection.name());
+            values.put(COLUMN_DATE_MODIFIED, DateUtil.formatDate(collection.dateModified(),
+                    DateUtil.RAW_FORMAT_DATE));
+
+            return values;
+        }
+
+        static Collection parseCursor(Cursor cursor) {
+            try {
+                return Collection.create(
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)),
+                        DateUtil.parseDate(cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE_MODIFIED))),
+                        new ArrayList<Group>());
+            } catch (ParseException e) {
+                return Collection.create(
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_UUID)),
+                        cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME)),
+                        null, new ArrayList<Group>());
             }
         }
     }

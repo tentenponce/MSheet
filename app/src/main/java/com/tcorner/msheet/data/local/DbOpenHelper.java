@@ -27,6 +27,7 @@ public class DbOpenHelper extends SQLiteOpenHelper {
             db.execSQL(Db.SheetTable.CREATE);
             db.execSQL(Db.GroupTable.CREATE);
             db.execSQL(Db.GroupTagTable.CREATE);
+            db.execSQL(Db.CollectionTable.CREATE);
             //Add other tables here
             db.setTransactionSuccessful();
         } finally {

@@ -1,6 +1,7 @@
 package com.tcorner.msheet.data;
 
 import com.tcorner.msheet.data.local.DatabaseHelper;
+import com.tcorner.msheet.data.model.Collection;
 import com.tcorner.msheet.data.model.Group;
 import com.tcorner.msheet.data.model.GroupTag;
 import com.tcorner.msheet.data.model.Sheet;
@@ -27,6 +28,7 @@ public class DataManager {
         this.databaseHelper = databaseHelper;
     }
 
+    /* Sheets */
     public Observable<Sheet> addSheet(Sheet sheet) {
         return databaseHelper.addSheet(sheet);
     }
@@ -51,6 +53,7 @@ public class DataManager {
         return databaseHelper.updateSheet(sheet);
     }
 
+    /* Groups */
     public Observable<Group> addGroup(Group group) {
         return databaseHelper.addGroup(group);
     }
@@ -67,6 +70,7 @@ public class DataManager {
         return databaseHelper.getGroups();
     }
 
+    /* Group Tag */
     public Observable<List<GroupTag>> addGroupTags(List<GroupTag> groupTags) {
         return databaseHelper.addGroupTags(groupTags);
     }
@@ -89,5 +93,22 @@ public class DataManager {
 
     public Observable<List<GroupTag>> getDistinctGroupTags() {
         return databaseHelper.getDistinctGroupTags();
+    }
+
+    /* Collections */
+    public Observable<Collection> addCollection(Collection collection) {
+        return databaseHelper.addCollection(collection);
+    }
+
+    public Observable<Collection> updateCollection(Collection collection) {
+        return databaseHelper.updateCollection(collection);
+    }
+
+    public Observable<Collection> deleteCollection(String uuid) {
+        return databaseHelper.deleteCollection(uuid);
+    }
+
+    public Observable<List<Collection>> getCollections() {
+        return databaseHelper.getCollections();
     }
 }

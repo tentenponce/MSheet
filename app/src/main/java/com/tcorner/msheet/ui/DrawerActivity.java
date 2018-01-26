@@ -15,6 +15,7 @@ import android.view.MenuItem;
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.ui.about.AboutFragment;
 import com.tcorner.msheet.ui.base.BaseActivity;
+import com.tcorner.msheet.ui.collection.CollectionFragment;
 import com.tcorner.msheet.ui.library.LibraryFragment;
 import com.tcorner.msheet.ui.settings.SettingsFragment;
 
@@ -105,7 +106,7 @@ public class DrawerActivity extends BaseActivity implements NavigationView.OnNav
                 title = getApplicationContext().getString(R.string.library);
                 break;
             case R.id.nav_collections:
-                fragmentClass = LibraryFragment.class;
+                fragmentClass = CollectionFragment.class;
                 title = getApplicationContext().getString(R.string.collections);
                 break;
             case R.id.nav_settings:

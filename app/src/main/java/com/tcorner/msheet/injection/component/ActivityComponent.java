@@ -2,6 +2,7 @@ package com.tcorner.msheet.injection.component;
 
 import com.tcorner.msheet.injection.PerActivity;
 import com.tcorner.msheet.injection.module.ActivityModule;
+import com.tcorner.msheet.ui.collection.CollectionFragment;
 import com.tcorner.msheet.ui.library.LibraryFragment;
 import com.tcorner.msheet.ui.library.modifygroup.ModifyGroupActivity;
 import com.tcorner.msheet.ui.sheet.SheetActivity;
@@ -20,4 +21,6 @@ public interface ActivityComponent {
     void inject(ModifyGroupActivity modifyGroupActivity);
 
     void inject(SheetActivity sheetActivity);
+
+    void inject(CollectionFragment collectionFragment);
 }

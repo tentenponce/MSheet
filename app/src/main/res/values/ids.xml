@@ -2,4 +2,5 @@
 <resources>
     <item name="group_item" type="id" />
     <item name="sheet_item" type="id"/>
+    <item name="collection_item" type="id"/>
 </resources>
