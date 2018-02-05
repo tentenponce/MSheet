@@ -29,6 +29,8 @@ public abstract class BaseActivity extends AppCompatActivity implements MvpView 
     private ActivityComponent mActivityComponent;
     private long mActivityId;
 
+    private ConfigPersistentComponent configPersistentComponent;
+
     @Override
     public void showError() {
         Toast.makeText(this, R.string.error_generic, Toast.LENGTH_SHORT).show();
@@ -38,20 +40,7 @@ public abstract class BaseActivity extends AppCompatActivity implements MvpView 
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Create the ActivityComponent and reuses cached ConfigPersistentComponent if this is
-        // being called after a configuration change.
-        mActivityId = savedInstanceState != null ?
-                savedInstanceState.getLong(KEY_ACTIVITY_ID) : NEXT_ID.getAndIncrement();
-        ConfigPersistentComponent configPersistentComponent;
-        if (!sComponentsMap.containsKey(mActivityId)) {
-            configPersistentComponent = DaggerConfigPersistentComponent.builder()
-                    .applicationComponent(MSheetApplication.get(this).getComponent())
-                    .build();
-            sComponentsMap.put(mActivityId, configPersistentComponent);
-        } else {
-            configPersistentComponent = sComponentsMap.get(mActivityId);
-        }
-        mActivityComponent = configPersistentComponent.activityComponent(new ActivityModule(this));
+        initActivityComponent(savedInstanceState);
     }
 
     @Override
@@ -69,6 +58,27 @@ public abstract class BaseActivity extends AppCompatActivity implements MvpView 
     }
 
     public ActivityComponent activityComponent() {
+        if (mActivityComponent == null) {
+            initActivityComponent(null);
+        }
+
         return mActivityComponent;
+    }
+
+    // Create the ActivityComponent and reuses cached ConfigPersistentComponent if this is
+    // being called after a configuration change.
+    private void initActivityComponent(Bundle savedInstanceState) {
+        mActivityId = savedInstanceState != null ?
+                savedInstanceState.getLong(KEY_ACTIVITY_ID) : NEXT_ID.getAndIncrement();
+        if (!sComponentsMap.containsKey(mActivityId)) {
+            configPersistentComponent = DaggerConfigPersistentComponent.builder()
+                    .applicationComponent(MSheetApplication.get(this).getComponent())
+                    .build();
+            sComponentsMap.put(mActivityId, configPersistentComponent);
+        } else {
+            configPersistentComponent = sComponentsMap.get(mActivityId);
+        }
+
+        mActivityComponent = configPersistentComponent.activityComponent(new ActivityModule(this));
     }
 }

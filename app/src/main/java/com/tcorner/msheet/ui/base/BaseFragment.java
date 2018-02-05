@@ -3,6 +3,7 @@ package com.tcorner.msheet.ui.base;
 import android.support.v4.app.Fragment;
 
 import com.tcorner.msheet.R;
+import com.tcorner.msheet.injection.component.ActivityComponent;
 import com.tcorner.msheet.util.DialogFactory;
 
 /**
@@ -17,7 +18,11 @@ public class BaseFragment extends Fragment implements MvpView {
         DialogFactory.createGenericErrorDialog(getContext(), R.string.error_generic).show();
     }
 
-    public BaseActivity getBaseActivity() {
-        return (BaseActivity) getActivity();
+    public ActivityComponent getComponent() {
+        if (!(getActivity() instanceof BaseActivity)) {
+            throw new RuntimeException("Activity must extends BaseActivity to use this method.");
+        }
+
+        return ((BaseActivity) getActivity()).activityComponent();
     }
 }

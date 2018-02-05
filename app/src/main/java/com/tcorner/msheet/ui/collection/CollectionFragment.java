@@ -1,6 +1,8 @@
 package com.tcorner.msheet.ui.collection;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -15,8 +17,9 @@ import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Collection;
-import com.tcorner.msheet.ui.base.BaseActivity;
 import com.tcorner.msheet.ui.base.BaseFragment;
+import com.tcorner.msheet.ui.collection.modifycollection.ModifyCollectionActivity;
+import com.tcorner.msheet.util.IntentUtil;
 
 import java.util.List;
 
@@ -53,12 +56,12 @@ public class CollectionFragment extends BaseFragment implements View.OnClickList
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((BaseActivity) getActivity()).activityComponent().inject(this);
+        getComponent().inject(this);
         collectionPresenter.attachView(this);
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_collection, container, false);
         ButterKnife.bind(this, v);
         setHasOptionsMenu(true);
@@ -67,7 +70,7 @@ public class CollectionFragment extends BaseFragment implements View.OnClickList
     }
 
     @Override
-    public void onViewCreated(View view, Bundle savedInstanceState) {
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         /* init listeners */
         fabAddCollection.setOnClickListener(this);
 
@@ -112,6 +115,9 @@ public class CollectionFragment extends BaseFragment implements View.OnClickList
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.fab_add_collection:
+                Intent intent = new Intent(getContext(), ModifyCollectionActivity.class);
+                intent.putExtra(IntentUtil.MODIFY_GROUP_ACTION, IntentUtil.ADD_ACTION);
+                startActivity(intent);
                 break;
             default:
                 break;

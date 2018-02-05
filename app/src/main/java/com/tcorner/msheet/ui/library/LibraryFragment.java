@@ -18,7 +18,6 @@ import com.mikepenz.fastadapter.IAdapter;
 import com.mikepenz.fastadapter.commons.adapters.FastItemAdapter;
 import com.tcorner.msheet.R;
 import com.tcorner.msheet.data.model.Group;
-import com.tcorner.msheet.ui.base.BaseActivity;
 import com.tcorner.msheet.ui.base.BaseFragment;
 import com.tcorner.msheet.ui.library.modifygroup.ModifyGroupActivity;
 import com.tcorner.msheet.ui.sheet.SheetActivity;
@@ -64,7 +63,7 @@ public class LibraryFragment extends BaseFragment implements LibraryMvpView, Vie
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        ((BaseActivity) getActivity()).activityComponent().inject(this);
+        getComponent().inject(this);
         libraryPresenter.attachView(this);
     }
 
