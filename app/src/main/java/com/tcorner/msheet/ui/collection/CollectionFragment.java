@@ -116,7 +116,7 @@ public class CollectionFragment extends BaseFragment implements View.OnClickList
         switch (view.getId()) {
             case R.id.fab_add_collection:
                 Intent intent = new Intent(getContext(), ModifyCollectionActivity.class);
-                intent.putExtra(IntentUtil.MODIFY_GROUP_ACTION, IntentUtil.ADD_ACTION);
+                intent.putExtra(IntentUtil.MODIFY_ACTION, IntentUtil.ADD_ACTION);
                 startActivity(intent);
                 break;
             default:

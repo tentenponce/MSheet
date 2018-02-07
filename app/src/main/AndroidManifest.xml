@@ -24,6 +24,9 @@
             android:windowSoftInputMode="adjustResize"/>
         <activity android:name=".ui.sheet.SheetActivity"/>
         <activity android:name=".ui.play.PlayActivity"/>
+        <activity
+            android:name=".ui.collection.modifycollection.ModifyCollectionActivity"
+            android:windowSoftInputMode="adjustResize"/>
     </application>
 
 </manifest>

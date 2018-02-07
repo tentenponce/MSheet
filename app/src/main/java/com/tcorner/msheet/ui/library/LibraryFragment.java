@@ -127,7 +127,7 @@ public class LibraryFragment extends BaseFragment implements LibraryMvpView, Vie
 
                         if (i == UPDATE_ID) {
                             Intent intent = new Intent(getContext(), ModifyGroupActivity.class);
-                            intent.putExtra(IntentUtil.MODIFY_GROUP_ACTION, IntentUtil.UPDATE_ACTION);
+                            intent.putExtra(IntentUtil.MODIFY_ACTION, IntentUtil.UPDATE_ACTION);
                             intent.putExtra(IntentUtil.UPDATE_GROUP, selectedGroup);
                             startActivity(intent);
                         } else {
@@ -189,7 +189,7 @@ public class LibraryFragment extends BaseFragment implements LibraryMvpView, Vie
     public void onClick(View view) {
         if (view.getId() == R.id.fab_add_sheet) {
             Intent intent = new Intent(getContext(), ModifyGroupActivity.class);
-            intent.putExtra(IntentUtil.MODIFY_GROUP_ACTION, IntentUtil.ADD_ACTION);
+            intent.putExtra(IntentUtil.MODIFY_ACTION, IntentUtil.ADD_ACTION);
             startActivity(intent);
         }
     }

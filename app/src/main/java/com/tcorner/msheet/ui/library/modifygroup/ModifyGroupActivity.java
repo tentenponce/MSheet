@@ -8,7 +8,6 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -180,12 +179,12 @@ public class ModifyGroupActivity extends BaseActivity implements ModifyGroupMvpV
 
     private void initViews() {
         /* init identify modify action */
-        if (!getIntent().hasExtra(IntentUtil.MODIFY_GROUP_ACTION)) { //check if there's action
+        if (!getIntent().hasExtra(IntentUtil.MODIFY_ACTION)) { //check if there's action
             Toast.makeText(this, R.string.error_generic, Toast.LENGTH_SHORT).show();
             finish();
         }
 
-        action = getIntent().getIntExtra(IntentUtil.MODIFY_GROUP_ACTION, -1);
+        action = getIntent().getIntExtra(IntentUtil.MODIFY_ACTION, -1);
 
         if (action == -1) { //if -1, return also
             Toast.makeText(this, R.string.error_generic, Toast.LENGTH_SHORT).show();

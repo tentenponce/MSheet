@@ -9,6 +9,8 @@
     <string name="tv_group_tags">Add Tags to Your Piece</string>
     <string name="title_add_piece">Add Piece</string>
     <string name="title_update_piece">Update Piece</string>
+    <string name="title_add_collection">Add Collection</string>
+    <string name="title_update_collection">Update Collection</string>
     <string name="error_piece_name_empty">Piece name cannot be empty.</string>
     <string name="dialog_delete_group_title">Delete Group</string>
     <string name="dialog_delete_group_message">Are you sure you want to remove this beautiful piece?</string>
@@ -44,4 +46,8 @@
     <br />• Flipping pages has never been easier! you don\'t even need to hold nor touch it, just hover your hands and voila! It will instantly turn to next page for you.
     <br />• You can even play beside an electric fan without worrying your folder to be thrown to the other world.
     <br />• More features to come!]]></string>
+    <string name="collection_name">Collection Name</string>
+    <string name="group_collection_title">Groups in this collection</string>
+    <string name="default_collection_name">Collection 1</string>
+    <string name="collection_group_empty">Click here to add a piece(s) to your collection.</string>
 </resources>
